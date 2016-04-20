@@ -1,6 +1,7 @@
 package pp.block1.cc.test;
 
 import static pp.block1.cc.dfa.State.ID6_DFA;
+import static pp.block1.cc.dfa.State.LA_DFA;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -33,8 +34,8 @@ public class CheckerTest {
 		accepts("La         ");
 		accepts("La La  ");
 		rejects("LLaa");
-		accepts("LaLaLi");
-		accepts("LaaLa Li  ");
+		accepts("LaLaLaLi");
+		rejects("LaaLa Li  ");
 		rejects("LaLaLii");
 		rejects("LaLaLaLaLi");
 		rejects("");

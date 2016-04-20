@@ -1,6 +1,7 @@
 package pp.block1.cc.test;
 
 import static pp.block1.cc.dfa.State.ID6_DFA;
+import static pp.block1.cc.dfa.State.LA_DFA;
 
 import java.util.List;
 
@@ -27,11 +28,10 @@ public class ScannerTest {
 	public void testLA() {
 		this.dfa = LA_DFA;
 		yields("");
-		yields("LaaaaLaLaa Laaaa LaLiLaa", "LaaaaLa", "Laa Laaaa LaLi", "Laa");
 		yields("La   La", "La   La");
-		yields("LLa");
-		yields("LaLaLaLaLaLi", "LaLa", "LaLaLaLi");
-		yields("LaLaLaLaPi");
+		yields("Laaa Laaaa  La       LiLaaaLa", "Laaa Laaaa  La       Li", "LaaaLa");
+		yields("La", "La");
+		yields("LaLaLaLiLa", "LaLaLaLi", "La");
 	}
 
 	private void yields(String word, String... tokens) {
