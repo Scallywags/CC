@@ -26,6 +26,22 @@ public class CheckerTest {
 		rejects("123456");
 	}
 
+	@Test
+	public void testLA() {
+		this.dfa = LA_DFA;
+		accepts("La");
+		accepts("La         ");
+		accepts("La La  ");
+		rejects("LLaa");
+		accepts("LaLaLi");
+		accepts("LaaLa Li  ");
+		rejects("LaLaLii");
+		rejects("LaLaLaLaLi");
+		rejects("");
+		rejects("pi");
+		rejects("LA");
+	}
+
 
 	private void accepts(String word) {
 		if (!this.myChecker.accepts(this.dfa, word)) {

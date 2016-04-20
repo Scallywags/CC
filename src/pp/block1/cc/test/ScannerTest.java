@@ -23,6 +23,17 @@ public class ScannerTest {
 		yields("a12345AaBbCc", "a12345", "AaBbCc");
 	}
 
+	@Test
+	public void testLA() {
+		this.dfa = LA_DFA;
+		yields("");
+		yields("LaaaaLaLaa Laaaa LaLiLaa", "LaaaaLa", "Laa Laaaa LaLi", "Laa");
+		yields("La   La", "La   La");
+		yields("LLa");
+		yields("LaLaLaLaLaLi", "LaLa", "LaLaLaLi");
+		yields("LaLaLaLaPi");
+	}
+
 	private void yields(String word, String... tokens) {
 		List<String> result = this.myGen.scan(this.dfa, word);
 		if (result == null) {
