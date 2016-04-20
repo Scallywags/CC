@@ -7,11 +7,11 @@ public class MyChecker implements Checker {
 		if (word.isEmpty()) {
 			return start.isAccepting();
 		} else {
-			State next = start.getNext(word.charAt(0));
-			if (next == null) {
+			char firstChar = word.charAt(0);
+			if (!start.hasNext(firstChar)) {
 				return false;
 			} else {
-				return accepts(next, word.substring(1));
+				return accepts(start.getNext(firstChar), word.substring(1));
 			}
 		}
 	}	
