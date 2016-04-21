@@ -1,5 +1,5 @@
 lexer grammar La;
 
-LA : 		'L' 'a'+ ' '*			;
-LALA : 		LA LA					;
-LALALALI :	LA LA LA 'L' 'i' ' '*	;
+LA			: 	'La'+ ' '*			;
+LALA		: 	LA LA				;
+LALALALI	:	LA LA LA 'Li' ' '*	;
