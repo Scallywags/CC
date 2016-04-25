@@ -19,6 +19,7 @@ import pp.block2.cc.ll.Grammar;
 import pp.block2.cc.ll.Grammars;
 import pp.block2.cc.ll.If;
 import pp.block2.cc.ll.LLCalc;
+import pp.block2.cc.ll.MyLLCalc;
 import pp.block2.cc.ll.Rule;
 import pp.block2.cc.ll.Sentence;
 
@@ -72,7 +73,7 @@ public class LLCalcTest {
 
 	/** Creates an LL1-calculator for a given grammar. */
 	private LLCalc createCalc(Grammar g) {
-		return ... // your implementation of LLCalc (Ex. 2-CC.5)
+		return new MyLLCalc(g); // your implementation of LLCalc (Ex. 2-CC.5)
 	}
 
 	@SuppressWarnings("unchecked")
