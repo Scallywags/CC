@@ -52,9 +52,7 @@ public class MyLLCalc implements LLCalc {
 				int i = 1;
 				int k = betas.size() - 1;
 				while (first(betas.get(i - 1)).contains(Symbol.EMPTY) && i  <= k ) {
-					Set<Term> unite = first(betas.get(i + 1));
-					unite.remove(Symbol.EMPTY);
-					rhs.addAll(unite);
+					rhs.addAll(first(betas.get(i)).stream().filter(term -> term != Symbol.EMPTY).collect(Collectors.toSet()));
 					i = i + 1;
 				}
 
@@ -83,8 +81,8 @@ public class MyLLCalc implements LLCalc {
 				
 				Set<Term> trailer = follow(bigA);
 				
-				ListIterator<Symbol> iterator = betas.listIterator(betas.size() - 1);
-				for (Symbol bi = betas.get(betas.size() - 1); iterator.hasPrevious(); bi = iterator.previous()) {
+				for (int i = betas.size() - 1; i >= 0; i--) {
+					Symbol bi = betas.get(i);
 					if (bi instanceof NonTerm) {
 						NonTerm biNT = (NonTerm) bi;
 						setsAreStillChanging |= follow(biNT).addAll(trailer);
