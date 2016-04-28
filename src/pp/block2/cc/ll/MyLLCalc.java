@@ -45,7 +45,8 @@ public class MyLLCalc implements LLCalc {
 				NonTerm bigA = rule.getLHS();
 				List<Symbol> betas = rule.getRHS();
 
-				Set<Term> rhs = first(betas.get(0));
+				Set<Term> rhs = new HashSet<>();
+				rhs.addAll(first(betas.get(0)));
 				rhs.remove(Symbol.EMPTY);
 
 				int i = 1;
@@ -100,12 +101,11 @@ public class MyLLCalc implements LLCalc {
 
 	private void calculateFirstPlusses() {
 		for (Rule rule : grammar.getRules()) {
-			Set<Term> firsts = first(rule.getRHS().get(0));
-			if (firsts.contains(Symbol.EMPTY)) {
-				Set<Term> follows = follow(rule.getLHS());
-				firsts.addAll(follows);
+			Set<Term> firstP = first(rule.getRHS().get(0));
+			if (firstP.contains(Symbol.EMPTY)) {
+				firstP.addAll(follow(rule.getLHS()));
 			}
-			firstPlusses.put(rule, firsts);
+			this.firstPlusses.put(rule, firstP);
 		}
 	}
 
