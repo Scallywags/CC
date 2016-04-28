@@ -30,7 +30,9 @@ public class MyLLCalc implements LLCalc {
 	}
 
 	private void calculateFirsts() {
-		grammar.getTerminals().forEach(terminal -> firsts.put(terminal, Collections.singleton(terminal)));	
+		grammar.getTerminals().stream()
+			.peek(terminal -> firsts.put(terminal, new HashSet<>()))
+			.forEach(terminal -> first(terminal).add(terminal));
 		firsts.put(Symbol.EMPTY, Collections.singleton(Symbol.EMPTY));
 		firsts.put(Symbol.EOF, Collections.singleton(Symbol.EOF));
 		grammar.getNonterminals().forEach(nonterminal -> firsts.put(nonterminal, new HashSet<>()));
@@ -75,9 +77,9 @@ public class MyLLCalc implements LLCalc {
 		while (setsAreStillChanging) {
 			setsAreStillChanging = false;
 			
-			for (Rule rule : grammar.getRules()) {
-				NonTerm bigA = rule.getLHS();
-				List<Symbol> betas = rule.getRHS();
+			for (Rule p : grammar.getRules()) {
+				NonTerm bigA = p.getLHS();
+				List<Symbol> betas = p.getRHS();
 				
 				Set<Term> trailer = follow(bigA);
 				
