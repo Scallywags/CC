@@ -70,6 +70,14 @@ public class LLCalcTest {
 		// is-LL1-test
 		assertFalse(calc.isLL1());
 	}
+	
+//	@Test
+//	public void testStat() {
+//		Grammar g = Grammars.makeStat();
+//		LLCalc calc = createCalc(g);
+//		
+//		assertTrue(calc.isLL1());
+//	}
 
 	/** Creates an LL1-calculator for a given grammar. */
 	private LLCalc createCalc(Grammar g) {
