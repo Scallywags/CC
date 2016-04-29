@@ -1,6 +1,6 @@
 package pp.block2.cc.ll;
 
-import java.util.Collections;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -29,11 +29,9 @@ public class MyLLCalc implements LLCalc {
 	}
 
 	private void calculateFirsts() {
-		grammar.getTerminals().stream()
-			.peek(terminal -> firsts.put(terminal, new HashSet<>()))
-			.forEach(terminal -> first(terminal).add(terminal));
-		firsts.put(Symbol.EMPTY, Collections.singleton(Symbol.EMPTY));
-		firsts.put(Symbol.EOF, Collections.singleton(Symbol.EOF));
+		grammar.getTerminals().forEach(terminal -> firsts.put(terminal, new HashSet<>(Arrays.asList(terminal))));
+		firsts.put(Symbol.EMPTY, new HashSet<>(Arrays.asList(Symbol.EMPTY)));
+		firsts.put(Symbol.EOF, new HashSet<>(Arrays.asList(Symbol.EMPTY)));
 		grammar.getNonterminals().forEach(nonterminal -> firsts.put(nonterminal, new HashSet<>()));
 
 		boolean setsAreStillChanging = true;
@@ -50,13 +48,13 @@ public class MyLLCalc implements LLCalc {
 				rhs.remove(Symbol.EMPTY);
 
 				int i = 1;
-				int k = betas.size() - 1;
-				while (first(betas.get(i - 1)).contains(Symbol.EMPTY) && i  <= k ) {
+				int k = betas.size();
+				while (first(betas.get(i - 1)).contains(Symbol.EMPTY) && i  <= k - 1) {
 					rhs.addAll(first(betas.get(i)).stream().filter(term -> term != Symbol.EMPTY).collect(Collectors.toSet()));
 					i = i + 1;
 				}
 
-				if (i == k && first(betas.get(k)).contains(Symbol.EMPTY)) {
+				if (i == k && first(betas.get(k - 1)).contains(Symbol.EMPTY)) {
 					rhs.add(Symbol.EMPTY);
 				}
 
@@ -79,7 +77,7 @@ public class MyLLCalc implements LLCalc {
 				NonTerm bigA = p.getLHS();
 				List<Symbol> betas = p.getRHS();
 				
-				Set<Term> trailer = follow(bigA);
+				Set<Term> trailer = new HashSet<>(follow(bigA));
 				
 				for (int i = betas.size() - 1; i >= 0; i--) {
 					Symbol bi = betas.get(i);
@@ -89,10 +87,10 @@ public class MyLLCalc implements LLCalc {
 						if (first(biNT).contains(Symbol.EMPTY)) {
 							trailer.addAll(first(biNT).stream().filter(term -> term != Symbol.EMPTY).collect(Collectors.toSet()));
 						} else {
-							trailer = first(biNT);
+							trailer = new HashSet<>(first(biNT));
 						}
 					} else {
-						trailer = first(bi);
+						trailer = new HashSet<>(first(bi));
 					}					
 				}
 			}
@@ -101,7 +99,8 @@ public class MyLLCalc implements LLCalc {
 
 	private void calculateFirstPlusses() {
 		for (Rule rule : grammar.getRules()) {
-			Set<Term> firstP = first(rule.getRHS().get(0));
+			Set<Term> firstP = new HashSet<>();
+			firstP.addAll(first(rule.getRHS().get(0)));
 			if (firstP.contains(Symbol.EMPTY)) {
 				firstP.addAll(follow(rule.getLHS()));
 			}
