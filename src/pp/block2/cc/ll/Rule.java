@@ -33,7 +33,9 @@ public class Rule {
 	}
 	private final NonTerm lhs;
 
-	/** Returns the right hand side of this rule. */
+	/** Returns the right hand side of this rule.
+	 * @return the rhs of this rule (which may be an empty list)
+	 */
 	public List<Symbol> getRHS() {
 		return this.rhs;
 	}
