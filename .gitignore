@@ -7,5 +7,5 @@ CC.iml
 antlr-runtime-4.5.3.jar
 out
 out/*
-gen/pp/block1/cc/antlr/Example.java
-gen/pp/block1/cc/antlr/Example.tokens
+gen/*
+gen
