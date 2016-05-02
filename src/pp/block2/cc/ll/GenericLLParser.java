@@ -1,6 +1,5 @@
 package pp.block2.cc.ll;
 
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -57,19 +56,28 @@ public class GenericLLParser implements Parser {
 		// fill in
 		if (symb instanceof Term) {
 			Term term = (Term) symb;
-			Token token = next();
-			
-			assert term.getTokenType() == token.getType();
-			
-			return new AST(term, token);
+			if (term == Symbol.EMPTY) {
+				return null;
+			} else {
+				Token token = next();
+				if (term.getTokenType() != token.getType()) {
+					throw new ParseException(
+							"Expected " + term.getName() + ", type=" + term.getTokenType() +
+							", but got " + token.getText() + ", type=" + token.getType());
+				}
+				return new AST(term, token);	
+			}			
 		} else if (symb instanceof NonTerm) {
 			NonTerm nonterm = (NonTerm) symb;
 			Rule rule = lookup(nonterm);
-			if (rule.getRHS().equals(Arrays.asList(Symbol.EMPTY))) {
+
+			AST ast = parse(rule);
+			if (ast.getChildren().isEmpty()) {
 				return null;
 			} else {
-				return parse(rule);
+				return ast;
 			}
+
 		} else {
 			throw new ParseException("Symbol is neither a Term or NonTerm!");
 		}
@@ -89,8 +97,12 @@ public class GenericLLParser implements Parser {
 		NonTerm nonterm = rule.getLHS();
 		AST ast = new AST(nonterm);
 		for (Symbol symbol : rule.getRHS()) {
-			ast.addChild(parse(symbol));
+			AST child = parse(symbol);
+			if (child != null) {
+				ast.addChild(child);
+			}
 		}
+		
 		return ast;
 	}
 
