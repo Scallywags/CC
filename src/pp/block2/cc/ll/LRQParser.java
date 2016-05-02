@@ -36,18 +36,103 @@ public class LRQParser implements Parser {
 		return parseL();
 	}
 
-	private AST parseL() {
+	private AST parseL() throws ParseException {
+		System.out.println("Parsing L!");
 		AST ast = new AST(L);
-		switch (next().getType()) {
-		case LRQ.R:
-			ast.addChild(parseR()); //TODO
+		Token next = peek();
+		
+		switch (next.getType()) {
+		case LRQ.A:
+		case LRQ.C:
+			ast.addChild(parseR());
 			ast.addChild(parseToken(LRQ.A));
 			break;
-		case LRQ.Q:
-			ast.addChild(parseQ()); //TODO
+		case LRQ.B:
+			ast.addChild(parseQ());
 			ast.addChild(parseToken(LRQ.B));
+			ast.addChild(parseToken(LRQ.A));
+			break;
+		default:
+			throw unparsable(S);
 		}
 		return ast;
+	}
+	
+	private AST parseR() throws ParseException {
+		System.out.println("Parsing R!");
+		AST ast = new AST(R);
+		Token next = peek();
+		
+		switch (next.getType()) {
+		case LRQ.C:
+			ast.addChild(parseToken(LRQ.C));
+		case LRQ.A:
+			ast.addChild(parseToken(LRQ.A));
+			ast.addChild(parseToken(LRQ.B));
+			ast.addChild(parseToken(LRQ.A));
+			ast.addChild(parseS());			
+			break;
+		default:
+			throw unparsable(R);
+		}
+		
+		return ast;
+	}
+	
+	private AST parseS() throws ParseException {
+		System.out.println("Parsing S!");
+		AST ast = new AST(S);
+		Token next = peek();
+		
+		switch(next.getType()) {
+		case LRQ.B:
+			ast.addChild(parseToken(LRQ.B));
+			ast.addChild(parseToken(LRQ.C));
+			ast.addChild(parseS());
+			break;
+		case LRQ.A:
+			//case Epsilon
+			break;
+		default:
+			throw unparsable(S);
+		}
+		return ast;
+	}
+	
+	private AST parseQ() throws ParseException {
+		System.out.println("Parsing Q!");
+		AST ast = new AST(Q);
+		ast.addChild(parseToken(LRQ.B));
+		ast.addChild(parseP());
+		return ast;
+	}
+	
+	private AST parseP() throws ParseException {
+		System.out.println("Parsing P!");
+		AST ast = new AST(P);
+		Token next = peek();
+		switch(next.getType()) {
+		case LRQ.B:
+			ast.addChild(parseToken(LRQ.B));
+		case LRQ.C:
+			ast.addChild(parseToken(LRQ.C));
+			break;
+		default:
+			throw unparsable(P);
+		}
+		return ast;
+	}
+	
+	private ParseException unparsable(NonTerm nt) {
+		try {
+			Token next = peek();
+			return new ParseException(String.format(
+					"Line %d:%d - could not parse '%s' at token '%s'",
+					next.getLine(), next.getCharPositionInLine(), nt.getName(),
+					this.fact.get(next.getType())));
+		} catch (ParseException e) {
+			return e;
+		}
 	}
 
 	/** Returns the next token, without moving the token index. */
@@ -81,8 +166,9 @@ public class LRQParser implements Parser {
 			System.err.println("Usage: [text]+");
 		} else {
 			for (String text : args) {
+				System.out.println("text = " + text);
 				CharStream stream = new ANTLRInputStream(text);
-				Lexer lexer = new Sentence(stream);
+				Lexer lexer = new LRQ(stream);
 				try {
 					System.out.printf("Parse tree: %n%s%n",
 							new LRQParser().parse(lexer));
