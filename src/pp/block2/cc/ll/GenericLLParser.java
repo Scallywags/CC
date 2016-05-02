@@ -1,7 +1,7 @@
 package pp.block2.cc.ll;
 
+import java.util.Arrays;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -18,7 +18,7 @@ import pp.block2.cc.Term;
 /** Generic table-driven LL(1)-parser. */
 public class GenericLLParser implements Parser {
 	/** The grammar underlying this parser instance. */
-	private final Grammar g;
+	private final Grammar grammar;
 	/** The LL-calculater for the grammar. */
 	private final LLCalc calc;
 	/** Map from non-terminals to maps of rules indexed by terminal. */
@@ -30,7 +30,7 @@ public class GenericLLParser implements Parser {
 
 
 	public GenericLLParser(Grammar g) {
-		this.g = g;
+		this.grammar = g;
 		this.calc = new MyLLCalc(g); // here use your own class
 	}
 
@@ -38,7 +38,7 @@ public class GenericLLParser implements Parser {
 	public AST parse(Lexer lexer) throws ParseException {
 		this.tokens = lexer.getAllTokens();
 		this.index = 0;
-		return parse(this.g.getStart());
+		return parse(this.grammar.getStart());
 	}
 
 	/** Parses the start of the token stream according to a given
@@ -55,6 +55,24 @@ public class GenericLLParser implements Parser {
 	 */
 	private AST parse(Symbol symb) throws ParseException {
 		// fill in
+		if (symb instanceof Term) {
+			Term term = (Term) symb;
+			Token token = next();
+			
+			assert term.getTokenType() == token.getType();
+			
+			return new AST(term, token);
+		} else if (symb instanceof NonTerm) {
+			NonTerm nonterm = (NonTerm) symb;
+			Rule rule = lookup(nonterm);
+			if (rule.getRHS().equals(Arrays.asList(Symbol.EMPTY))) {
+				return null;
+			} else {
+				return parse(rule);
+			}
+		} else {
+			throw new ParseException("Symbol is neither a Term or NonTerm!");
+		}
 	}
 
 	/** Parses the start of the token stream according to a given
@@ -68,6 +86,12 @@ public class GenericLLParser implements Parser {
 	 */
 	private AST parse(Rule rule) throws ParseException {
 		// fill in
+		NonTerm nonterm = rule.getLHS();
+		AST ast = new AST(nonterm);
+		for (Symbol symbol : rule.getRHS()) {
+			ast.addChild(parse(symbol));
+		}
+		return ast;
 	}
 
 	/** Uses the lookup table to look up the rule to which
@@ -87,7 +111,7 @@ public class GenericLLParser implements Parser {
 			}
 		} else {
 			Token nextToken = peek();
-			Term term = this.g.getTerminal(nextToken.getType());
+			Term term = this.grammar.getTerminal(nextToken.getType());
 			result = getLL1Table().get(nt).get(term);
 			if (result == null) {
 				throw new ParseException(String.format(
@@ -129,6 +153,15 @@ public class GenericLLParser implements Parser {
 
 	/** Constructs the {@link #ll1Table}. */
 	private Map<NonTerm, Map<Term, Rule>> calcLL1Table() {
-		// fill in
+		Map<NonTerm, Map<Term, Rule>> table = new HashMap<>();
+		calc.getFirstp().forEach((rule, termset) -> {
+			NonTerm nonterm = rule.getLHS();
+			Map<Term, Rule> colums = table.getOrDefault(nonterm, new HashMap<>());
+			for (Term term : termset) {
+				colums.put(term, rule);
+			}
+			table.put(nonterm, colums);
+		});		
+		return table;
 	}
 }
