@@ -37,7 +37,6 @@ public class LRQParser implements Parser {
 	}
 
 	private AST parseL() throws ParseException {
-		System.out.println("Parsing L!");
 		AST ast = new AST(L);
 		Token next = peek();
 		
@@ -59,7 +58,6 @@ public class LRQParser implements Parser {
 	}
 	
 	private AST parseR() throws ParseException {
-		System.out.println("Parsing R!");
 		AST ast = new AST(R);
 		Token next = peek();
 		
@@ -80,7 +78,6 @@ public class LRQParser implements Parser {
 	}
 	
 	private AST parseS() throws ParseException {
-		System.out.println("Parsing S!");
 		AST ast = new AST(S);
 		Token next = peek();
 		
@@ -92,7 +89,10 @@ public class LRQParser implements Parser {
 			break;
 		case LRQ.A:
 			//case Epsilon
-			break;
+			
+			return null; 	//leave out if we actually want to have the S in our AST.
+			
+			//break;
 		default:
 			throw unparsable(S);
 		}
@@ -100,7 +100,6 @@ public class LRQParser implements Parser {
 	}
 	
 	private AST parseQ() throws ParseException {
-		System.out.println("Parsing Q!");
 		AST ast = new AST(Q);
 		ast.addChild(parseToken(LRQ.B));
 		ast.addChild(parseP());
@@ -108,7 +107,6 @@ public class LRQParser implements Parser {
 	}
 	
 	private AST parseP() throws ParseException {
-		System.out.println("Parsing P!");
 		AST ast = new AST(P);
 		Token next = peek();
 		switch(next.getType()) {

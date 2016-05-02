@@ -16,6 +16,8 @@ import pp.block2.cc.ParseException;
 import pp.block2.cc.Parser;
 import pp.block2.cc.ll.GenericLLParser;
 import pp.block2.cc.ll.Grammars;
+import pp.block2.cc.ll.LRQ;
+import pp.block2.cc.ll.LRQParser;
 import pp.block2.cc.ll.Sentence;
 import pp.block2.cc.ll.SentenceParser;
 
@@ -35,6 +37,18 @@ public class GenericLLParserTest {
 		fails("all undergraduate students love all compilers");
 		fails("all undergraduate students love love.");
 		fails("all undergraduate students all compilers.");
+	}
+	
+	@Test
+	public void testLRQ() {
+		this.lexerType = LRQ.class;
+		this.parser1 = new LRQParser();
+		this.parser2 = new GenericLLParser(Grammars.makeLRQ());
+		compare("cababcbca");
+		compare("bbcba");
+		fails("ababc");
+		fails("cacabca");
+		fails("bbcb");
 	}
 
 	private void fails(String text) {

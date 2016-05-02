@@ -56,14 +56,14 @@ public class GenericLLParser implements Parser {
 		// fill in
 		if (symb instanceof Term) {
 			Term term = (Term) symb;
-			if (term == Symbol.EMPTY) {
+			if (term.equals(Symbol.EMPTY)) {
 				return null;
 			} else {
 				Token token = next();
 				if (term.getTokenType() != token.getType()) {
 					throw new ParseException(
-							"Expected " + term.getName() + ", type=" + term.getTokenType() +
-							", but got " + token.getText() + ", type=" + token.getType());
+							"Expected {name=" + term.getName() + ", type=" + term.getTokenType() + "}" +
+							", but got {name=" + token.getText() + ", type=" + token.getType() + "}");
 				}
 				return new AST(term, token);	
 			}			
@@ -79,7 +79,7 @@ public class GenericLLParser implements Parser {
 			}
 
 		} else {
-			throw new ParseException("Symbol is neither a Term or NonTerm!");
+			throw new ParseException("U WOT?! Symbol is neither a Term or NonTerm!");
 		}
 	}
 
