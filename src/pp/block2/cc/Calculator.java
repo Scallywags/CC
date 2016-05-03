@@ -1,11 +1,11 @@
 package pp.block2.cc;
 
 import java.math.BigInteger;
-import java.util.stream.Stream;
 
 import org.antlr.v4.runtime.ANTLRInputStream;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.Lexer;
+import org.antlr.v4.runtime.tree.ErrorNode;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.ParseTreeProperty;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
@@ -17,16 +17,21 @@ import pp.block2.cc.antlr.ExprParser;
 
 public class Calculator extends ExprBaseListener {
 
-	ParseTreeProperty<BigInteger> results = new ParseTreeProperty<>();
-	ParseTreeProperty<Operator> operators = new ParseTreeProperty<>();
+	private ParseTreeProperty<BigInteger> results;
 
-	boolean error = false;
+	private boolean error;
 	
 	public Calculator () {
-
+		reset();
 	}
 
+	public void reset() {
+		results = new ParseTreeProperty<>();
+		error = false;
+	}
+	
 	public BigInteger calculate(String input) throws ParseException {
+		reset();
 		Lexer lexer = new ExprLexer(new ANTLRInputStream(input));
 		ExprParser parser = new ExprParser(new CommonTokenStream(lexer));
 		ParseTree tree = parser.expr();
@@ -34,9 +39,16 @@ public class Calculator extends ExprBaseListener {
 		System.out.println(tree.toStringTree(parser));
 		
 		new ParseTreeWalker().walk(this, tree);
+		
+		if (error) {
+			throw new ParseException();
+		}
+		
 		return results.get(tree);
 	}	
 
+	//------------ Number ------------
+	
 	@Override
 	public void visitTerminal(TerminalNode node) {
 		if (node.getSymbol().getType() == ExprLexer.NUMBER) {
@@ -44,78 +56,77 @@ public class Calculator extends ExprBaseListener {
 		}
 	}
 
+	//------------ Expr ------------
+	
 	@Override
-	public void exitCompExpr(ExprParser.CompExprContext ctx) {
+	public void exitPlusExpr(ExprParser.PlusExprContext ctx) {
 		BigInteger left = results.get(ctx.getChild(0));
-		BigInteger right = results.get(ctx.getChild(2));
-		Operator op = operators.get(ctx.getChild(1));
-		BigInteger result = null;
-		switch (op) {
-		case PLUS:
-		case MINMIN:
-			result = left.add(right);
-			break;
-		case MIN:
-			result = left.min(right);
-			break;
-		case MULT:
-			result = left.multiply(right);
-			break;
-		case DIV:
-			result = left.divide(right);
-			break;
-		case POW:
-			result = left.pow(right.intValue());
-			break;
-		default:
-			error = true;
-		}
-		results.put(ctx, result);
+		BigInteger right = results.get(ctx.getChild(2));	
+		results.put(ctx, left.add(right));
 	}
 	
 	@Override
-	public void exitBrackExpr(ExprParser.BrackExprContext ctx) {
+	public void exitMinExpr(ExprParser.MinExprContext ctx) {
+		BigInteger left = results.get(ctx.getChild(0));
+		BigInteger right = results.get(ctx.getChild(2));	
+		results.put(ctx, left.min(right));
+	}
+	
+	@Override
+	public void exitTermExpr(ExprParser.TermExprContext ctx) {
+		results.put(ctx, results.get(ctx.getChild(0)));
+	}
+	
+	//------------ Term ------------
+	
+	@Override
+	public void exitMultTerm(ExprParser.MultTermContext ctx) {
+		BigInteger left = results.get(ctx.getChild(0));
+		BigInteger right = results.get(ctx.getChild(2));
+		results.put(ctx, left.multiply(right));
+	}
+
+	@Override
+	public void exitDivTerm(ExprParser.DivTermContext ctx) {
+		BigInteger left = results.get(ctx.getChild(0));
+		BigInteger right = results.get(ctx.getChild(2));
+		results.put(ctx, left.divide(right));
+	}
+	
+	@Override
+	public void exitFacTerm(ExprParser.FacTermContext ctx) {
+		results.put(ctx, results.get(ctx.getChild(0)));
+	}
+	
+	//------------ Factor ------------
+	
+	@Override
+	public void exitExprFac(ExprParser.ExprFacContext ctx) {
 		results.put(ctx, results.get(ctx.getChild(1)));
 	}
 	
 	@Override
-	public void exitNumExpr(ExprParser.NumExprContext ctx) {
+	public void exitNegFac(ExprParser.NegFacContext ctx) {
+		results.put(ctx, results.get(ctx.getChild(1)).negate());
+	}
+	
+	@Override
+	public void exitNumFac(ExprParser.NumFacContext ctx) {
 		results.put(ctx, results.get(ctx.getChild(0)));
 	}
 	
 	@Override
-	public void enterPlusOp(ExprParser.PlusOpContext ctx) {
-		operators.put(ctx, Operator.PLUS);
-	}
-	public void enterMinOp(ExprParser.MinOpContext ctx) {
-		operators.put(ctx, Operator.MIN);
-	}
-	public void enterMultOp(ExprParser.MultOpContext ctx) {
-		operators.put(ctx, Operator.MULT);
-	}
-	public void enterDivOp(ExprParser.DivOpContext ctx) {
-		operators.put(ctx, Operator.DIV);
-	}
-	public void enterPowOp(ExprParser.PowOpContext ctx) {
-		operators.put(ctx, Operator.POW);
+	public void exitPowFac(ExprParser.PowFacContext ctx) {
+		BigInteger left = results.get(ctx.getChild(0));
+		BigInteger right = results.get(ctx.getChild(2));
+		results.put(ctx, left.pow(right.intValue()));
 	}
 	
+	//------------ Error ------------
 	
+	@Override
+	public void visitErrorNode(ErrorNode node) {
+		error = true;
+	}
 
-	enum Operator {
-		PLUS("+"), MIN("-"), MINMIN("--"), MULT("*"), DIV("/"), POW("^");
-		
-		private String op;
-		private Operator(String op) {
-			this.op = op;
-		}
-		
-		public static Operator getByOp(String op) {
-			return Stream.of(values()).filter(oper -> oper.op.equals(op)).findAny().get();
-		}
-		
-		public String toString() {
-			return name();
-		}
-	}
 }
