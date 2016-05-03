@@ -20,9 +20,6 @@ import pp.block2.cc.antlr.SentenceParser.ModifierContext;
 import pp.block2.cc.antlr.SentenceParser.ObjectContext;
 import pp.block2.cc.antlr.SentenceParser.SentenceContext;
 import pp.block2.cc.antlr.SentenceParser.SubjectContext;
-import pp.block2.cc.ll.Grammars;
-import pp.block2.cc.ll.LLCalc;
-import pp.block2.cc.ll.MyLLCalc;
 import pp.block2.cc.ll.Sentence;
 
 public class SentenceConverter //
@@ -31,8 +28,6 @@ public class SentenceConverter //
 	 * grammar. See {@link pp.block2.cc.ll.SentenceParser} for
 	 * example usage. */
 	private final SymbolFactory fact;
-	
-	private final LLCalc calc = new MyLLCalc(Grammars.makeSentence());
 	
 	private final NonTerm sentence = new NonTerm("Sentence");
 	private final NonTerm modifier = new NonTerm("Modifier");

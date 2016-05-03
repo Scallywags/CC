@@ -1,19 +1,26 @@
 grammar Expr;
 
-expr	: expr op expr
-		| number
-		| '(' expr ')'
+//TODO FIX!!!
+
+expr	: expr op expr	#compExpr
+		| NUMBER		#numExpr
+		| '(' expr ')'	#brackExpr
 		;
 
-op		: '+'
-		| '-'
-		| '*'
-		| '/'
-		| '--'
-		| <assoc=righit> '^'
+op		: <assoc=right> POW		#powOp 
+		| MULT					#multOp
+		| DIV					#divOp 	
+		| PLUS					#plusOp
+		| MIN					#minOp
 		;
 
-number	: ('0'..'9')+
+NUMBER	: ('0'..'9')+
+		| MIN NUMBER
 		;
 
 
+PLUS 	: '+'	;
+MULT	: '*'	;
+DIV		: '/'	;
+MIN		: '-'	;
+POW		: '^'	;
