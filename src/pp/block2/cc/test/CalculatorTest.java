@@ -14,7 +14,7 @@ public class CalculatorTest {
 
 	@Test
 	public void testAllTheThings() {
-		outcome(34, "18+16");
+		outcome(2, "18-16");
 		outcome(44, "8+9*4");
 		outcome(3, "8-5");
 		outcome(-128, "-((3-5)^(2+4*2)/8)");
