@@ -16,11 +16,12 @@ public class CalculatorTest {
 	public void testAllTheThings() {
 		outcome(34, "18+16");
 		outcome(44, "8+9*4");
-		outcome(8, "((3-5)^(2+4*1)/8)");
+		outcome(3, "8-5");
+		outcome(-128, "-((3-5)^(2+4*2)/8)");
 		outcome(256, "2^2^3");
 		fails("/");
 		fails("5*");
-		fails("/7");
+		fails("^7");
 	}
 
 	void outcome(int expected, String expression) {

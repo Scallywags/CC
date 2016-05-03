@@ -36,8 +36,6 @@ public class Calculator extends ExprBaseListener {
 		ExprParser parser = new ExprParser(new CommonTokenStream(lexer));
 		ParseTree tree = parser.expr();
 		
-		System.out.println(tree.toStringTree(parser));
-		
 		new ParseTreeWalker().walk(this, tree);
 		
 		if (error) {
@@ -69,7 +67,7 @@ public class Calculator extends ExprBaseListener {
 	public void exitMinExpr(ExprParser.MinExprContext ctx) {
 		BigInteger left = results.get(ctx.getChild(0));
 		BigInteger right = results.get(ctx.getChild(2));	
-		results.put(ctx, left.min(right));
+		results.put(ctx, left.subtract(right));
 	}
 	
 	@Override
