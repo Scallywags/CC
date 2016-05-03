@@ -5,4 +5,11 @@
 /SentenceLexer.tokens
 /SentenceListener.java
 /SentenceParser.java
-/SentenceUsage.java
+/Sentence2.tokens
+/Sentence2BaseListener.java
+/Sentence2Lexer.java
+/Sentence2Lexer.tokens
+/Sentence2Listener.java
+/Sentence2Parser.java
+/ExprLexer.java
+/ExprLexer.tokens
