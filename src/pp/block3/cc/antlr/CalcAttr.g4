@@ -9,11 +9,17 @@ import CalcVocab;
 }
 
 expr returns [ int val ]
-     : e0=expr TIMES e1=expr
+     : //{ System.out.println("Evaluating expr TIMES expr"); }
+       e0=expr TIMES e1=expr
        { $val = $e0.val * $e1.val; }
-     | e0=expr PLUS e1=expr
+     | //{ System.out.println("Evaluating expr PLUS expr"); }
+       e0=expr PLUS e1=expr
        { $val = $e0.val + $e1.val; }
-     | LPAR e=expr RPAR
+     | { System.out.println("Evaluating MINUES expr"); }
+       MINUS e=expr
+     	{ $val = -$e.val; }
+     | //{ System.out.println("Evaluating LPAR expr RPAR"); }
+       LPAR e=expr RPAR
        { $val = $e.val; }
      | { System.out.println("Evaluating NUMBER"); }
        NUMBER
