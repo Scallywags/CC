@@ -29,6 +29,9 @@ public class TTest {
 	
 	public void test(Type expected, String input){
 		parser = new TAttrParser(new CommonTokenStream(new TLexer(new ANTLRInputStream(input))));
+		System.out.println("parser = " + parser);
+		System.out.println("parser.t() = " + parser.t());
+		System.out.println("parster.t().type = " + parser.t().type);
 		Assert.assertEquals(expected, parser.t().type);
 		Assert.assertEquals(expected, listener.parse(input));	}
 
