@@ -18,7 +18,6 @@ import pp.block2.cc.antlr.ExprParser;
 public class Calculator extends ExprBaseListener {
 
 	private ParseTreeProperty<BigInteger> results;
-
 	private boolean error;
 	
 	public Calculator () {
