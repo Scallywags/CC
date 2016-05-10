@@ -16,18 +16,9 @@ import pp.block3.cc.antlr.TParser.PlusContext;
 
 public class TGrammarListener extends TBaseListener {
 	
-	private ParseTreeProperty<Type> types;
-	
-	public TGrammarListener() {
-		reset();
-	}
-	
-	public void reset() {
-		types = new ParseTreeProperty<>();
-	}
+	private ParseTreeProperty<Type> types = new ParseTreeProperty<>();
 	
 	public Type parse(String input) {
-		reset();
 		Lexer lexer = new TLexer(new ANTLRInputStream(input));
 		TParser parser = new TParser(new CommonTokenStream(lexer));
 		ParseTree tree = parser.t();
@@ -38,9 +29,15 @@ public class TGrammarListener extends TBaseListener {
 	
 	@Override
 	public void exitHat(HatContext ctx) {
-		Type left = types.get(ctx.t().get(0));
-		Type right = types.get(ctx.t().get(1));
-		types.put(ctx, right == Type.NUM ? (left != Type.BOOL ? left : Type.ERR) : Type.ERR);
+		System.out.println("exitHat left child: " + ctx.t().get(0).getText());
+		System.out.println("exitHat right child: " + ctx.t().get(1).getText());
+		Type left = types.get(ctx.getChild(0));
+		Type right = types.get(ctx.getChild(2));
+		Type result = right == Type.NUM ? (left != Type.BOOL ? left : Type.ERR) : Type.ERR;
+		System.out.println("exitHat left: " + left);
+		System.out.println("exitHat right: " + right);
+		System.out.println("exitHat result: " + result);
+		types.put(ctx, result);
 	}
 	
 	@Override
@@ -64,7 +61,22 @@ public class TGrammarListener extends TBaseListener {
 	
 	@Override
 	public void visitTerminal(TerminalNode node) {
-		types.put(node, Type.valueOf(node.getText().toUpperCase()));
+		int tokenType = node.getSymbol().getType();
+		System.out.println("terminal token type = " + tokenType);
+		Type type = null;
+		switch(tokenType) {
+		case TParser.NUM:
+			type = Type.NUM;
+			break;
+		case TParser.BOOL:
+			type = Type.BOOL;
+			break;
+		case TParser.STR:
+			type = Type.STR;
+			break;
+		}
+		System.out.println("terminal node = " + node + " type = " + type);
+		types.put(node, type);
 	}
 	
 	@Override
