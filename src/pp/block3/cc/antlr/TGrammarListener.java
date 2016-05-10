@@ -3,16 +3,17 @@ package pp.block3.cc.antlr;
 import org.antlr.v4.runtime.ANTLRInputStream;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.Lexer;
-import org.antlr.v4.runtime.tree.ErrorNode;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.ParseTreeProperty;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
-import org.antlr.v4.runtime.tree.TerminalNode;
 
+import pp.block3.cc.antlr.TParser.BoolContext;
 import pp.block3.cc.antlr.TParser.EqContext;
 import pp.block3.cc.antlr.TParser.HatContext;
+import pp.block3.cc.antlr.TParser.NumContext;
 import pp.block3.cc.antlr.TParser.ParContext;
 import pp.block3.cc.antlr.TParser.PlusContext;
+import pp.block3.cc.antlr.TParser.StrContext;
 
 public class TGrammarListener extends TBaseListener {
 	
@@ -29,14 +30,9 @@ public class TGrammarListener extends TBaseListener {
 	
 	@Override
 	public void exitHat(HatContext ctx) {
-		System.out.println("exitHat left child: " + ctx.t().get(0).getText());
-		System.out.println("exitHat right child: " + ctx.t().get(1).getText());
 		Type left = types.get(ctx.getChild(0));
 		Type right = types.get(ctx.getChild(2));
 		Type result = right == Type.NUM ? (left != Type.BOOL ? left : Type.ERR) : Type.ERR;
-		System.out.println("exitHat left: " + left);
-		System.out.println("exitHat right: " + right);
-		System.out.println("exitHat result: " + result);
 		types.put(ctx, result);
 	}
 	
@@ -60,28 +56,18 @@ public class TGrammarListener extends TBaseListener {
 	}
 	
 	@Override
-	public void visitTerminal(TerminalNode node) {
-		int tokenType = node.getSymbol().getType();
-		System.out.println("terminal token type = " + tokenType);
-		Type type = null;
-		switch(tokenType) {
-		case TParser.NUM:
-			type = Type.NUM;
-			break;
-		case TParser.BOOL:
-			type = Type.BOOL;
-			break;
-		case TParser.STR:
-			type = Type.STR;
-			break;
-		}
-		System.out.println("terminal node = " + node + " type = " + type);
-		types.put(node, type);
+	public void exitNum(NumContext ctx) {
+		types.put(ctx, Type.NUM);		
 	}
 	
 	@Override
-	public void visitErrorNode(ErrorNode node) {
-		types.put(node, Type.ERR);
+	public void exitBool(BoolContext ctx) {
+		types.put(ctx, Type.BOOL);
+	}
+	
+	@Override
+	public void exitStr(StrContext ctx) {
+		types.put(ctx, Type.STR);
 	}
 
 }

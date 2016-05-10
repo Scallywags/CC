@@ -25,14 +25,12 @@ public class TTest {
 		test(Type.BOOL, "3=4");
 		test(Type.BOOL, "true=true");
 		test(Type.BOOL, "\"YOLO\" = \"SWAG\"");
+		test(Type.ERR, "(\"aString\"^(1+1))+(false+false)");
 	}	
 	
 	public void test(Type expected, String input){
 		parser = new TAttrParser(new CommonTokenStream(new TLexer(new ANTLRInputStream(input))));
 		listener = new TGrammarListener();
-//		System.out.println("parser = " + parser);
-//		System.out.println("parser.t() = " + parser.t());
-//		System.out.println("parser.t().type = " + parser.t().type);
 		Assert.assertEquals(expected, parser.t().type);
 		Assert.assertEquals(expected, listener.parse(input));
 	
