@@ -7,6 +7,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+import pp.block3.cc.symbol.MySymbolTable;
 import pp.block3.cc.symbol.SymbolTable;
 
 public class SymbolTableTest {
@@ -14,7 +15,7 @@ public class SymbolTableTest {
 
 	@Before
 	public void initTable() {
-		table = // construct an instance of your implementation
+		table = new MySymbolTable();
 	}
 
 	@Test
@@ -43,6 +44,7 @@ public class SymbolTableTest {
 
 	@Test
 	public void testLookup() {
+		this.table.openScope(); //added since the stack was empty
 		assertFalse(this.table.contains("aap"));
 		assertTrue(this.table.add("aap"));
 		assertTrue(this.table.contains("aap"));
@@ -56,6 +58,7 @@ public class SymbolTableTest {
 		this.table.closeScope();
 		assertTrue(this.table.contains("aap"));
 		assertFalse(this.table.contains("noot"));
+		this.table.closeScope(); //added since we added the scope manually.
 	}
 
 	@Test

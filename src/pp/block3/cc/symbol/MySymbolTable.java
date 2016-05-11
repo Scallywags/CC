@@ -1,7 +1,6 @@
 package pp.block3.cc.symbol;
 
-import java.util.HashMap;
-import java.util.List;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.Stack;
 
@@ -21,13 +20,12 @@ public class MySymbolTable implements SymbolTable {
 
 	@Override
 	public boolean add(String id) {
-		scopes.peek().put(id, )
+		return scopes.peek().add(id);
 	}
 
 	@Override
 	public boolean contains(String id) {
-		// TODO Auto-generated method stub
-		return false;
+		return scopes.stream().anyMatch(set -> set.contains(id));
 	}
 
 }
