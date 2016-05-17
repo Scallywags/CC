@@ -9,3 +9,7 @@ out
 out/*
 gen/*
 gen
+src/assignments/assignment1/decimalGrammar.g4
+src/assignments/assignment1/exercise2point2.java
+src/assignments/assignment1/decimalVocab.g4
+src/test.java
