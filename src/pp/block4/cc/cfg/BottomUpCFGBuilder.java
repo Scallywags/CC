@@ -11,14 +11,20 @@ import org.antlr.v4.runtime.Lexer;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.TokenStream;
 import org.antlr.v4.runtime.tree.ParseTree;
+import org.antlr.v4.runtime.tree.ParseTreeProperty;
+import org.antlr.v4.runtime.tree.ParseTreeWalker;
+
 import pp.block4.cc.ErrorListener;
-import pp.block4.cc.cfg.FragmentParser.BlockStatContext;
 import pp.block4.cc.cfg.FragmentParser.BreakStatContext;
+import pp.block4.cc.cfg.FragmentParser.ContStatContext;
 
 /** Template bottom-up CFG builder. */
 public class BottomUpCFGBuilder extends FragmentBaseListener {
 	/** The CFG being built. */
 	private Graph graph;
+	
+	/** The corresponding graph nodes for the parsetree nodes **/
+	private ParseTreeProperty<Node> nodes = new ParseTreeProperty<>();
 
 	/** Builds the CFG for a program contained in a given file. */
 	public Graph build(File file) {
@@ -51,9 +57,21 @@ public class BottomUpCFGBuilder extends FragmentBaseListener {
 	/** Builds the CFG for a program given as an ANTLR parse tree. */
 	public Graph build(ParseTree tree) {
 		this.graph = new Graph();
-		// TODO Fill in
-		throw new UnsupportedOperationException("Fill in");
+		new ParseTreeWalker().walk(this, tree);
+		return graph;
 	}
+	
+	// ---------- TODO add all the listener methods here ----------
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	// ------------------------------------------------------------
 
 	@Override
 	public void enterBreakStat(BreakStatContext ctx) {
