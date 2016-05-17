@@ -2,7 +2,7 @@ grammar Fragment;
 
 program: stat+ EOF;
 
-stat: type ID (ASSIGN expr)? SEMI         #decl
+stat: type ID (ASSIGN expr)? SEMI         #declStat
     | target ASSIGN expr SEMI             #assignStat
     | IF LPAR expr RPAR stat (ELSE stat)? #ifStat 
     | WHILE LPAR expr RPAR stat           #whileStat 
