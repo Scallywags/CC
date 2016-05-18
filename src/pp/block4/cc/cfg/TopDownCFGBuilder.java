@@ -3,6 +3,7 @@ package pp.block4.cc.cfg;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.IdentityHashMap;
 import java.util.List;
 
 import org.antlr.v4.runtime.ANTLRInputStream;
@@ -12,7 +13,6 @@ import org.antlr.v4.runtime.Lexer;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.TokenStream;
 import org.antlr.v4.runtime.tree.ParseTree;
-import org.antlr.v4.runtime.tree.ParseTreeProperty;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 
 import pp.block4.cc.ErrorListener;
@@ -32,8 +32,8 @@ public class TopDownCFGBuilder extends FragmentBaseListener {
 	/** The CFG being built. */
 	private Graph graph;
 	
-	private ParseTreeProperty<Node> blocks = new ParseTreeProperty<>();
-	private ParseTreeProperty<Node> nexts = new ParseTreeProperty<>();
+	private IdentityHashMap<ParseTree, Node> blocks = new IdentityHashMap<>();
+	private IdentityHashMap<ParseTree, Node> nexts = new IdentityHashMap<>();
 
 	/** Builds the CFG for a program contained in a given file. */
 	public Graph build(File file) {
@@ -71,7 +71,7 @@ public class TopDownCFGBuilder extends FragmentBaseListener {
 	}
 	
 	@Override
-	public void enterProgram(ProgramContext ctx) {
+	public void enterProgram(ProgramContext ctx) {		
 		List<StatContext> stats = ctx.stat();
 		for (int i = 0; i < stats.size(); i++) {
 			StatContext stat = stats.get(i);
@@ -80,28 +80,32 @@ public class TopDownCFGBuilder extends FragmentBaseListener {
 		}
 		for (int i = 0; i < stats.size() - 1; i++) {
 			Node next = blocks.get(stats.get(i+1));
-			nexts.put(stats.get(i), next);
+			if (next != null)
+				nexts.put(stats.get(i), next);
 		}
 	}
 	
 	@Override
 	public void enterDeclStat(DeclStatContext ctx) {
 		Node decl = blocks.get(ctx);
-		Node next = nexts.get(ctx);
-		decl.addEdge(next);
+		Node next = nexts.get(ctx);	
+		if (next != null)
+			decl.addEdge(next);
 	}
 	
 	@Override
 	public void enterAssignStat(AssignStatContext ctx) {
 		Node assign = blocks.get(ctx);
 		Node next = nexts.get(ctx);
-		assign.addEdge(next);
+		if (next != null)
+			assign.addEdge(next);
 	}
 	
 	@Override
-	public void enterIfStat(IfStatContext ctx) { 
+	public void enterIfStat(IfStatContext ctx) {
 		Node ifNode = blocks.get(ctx);
 		Node next = nexts.get(ctx);
+		
 		
 		List<StatContext> stats = ctx.stat();
 		for (StatContext stat : stats) {
@@ -119,7 +123,8 @@ public class TopDownCFGBuilder extends FragmentBaseListener {
 			ifNode.addEdge(elsePart);
 			nexts.put(elseTree, next);
 		} else {
-			ifNode.addEdge(next);
+			if (next != null)
+				ifNode.addEdge(next);
 		}
 	}
 	
@@ -127,14 +132,15 @@ public class TopDownCFGBuilder extends FragmentBaseListener {
 	public void enterWhileStat(WhileStatContext ctx) {
 		Node whileNode = blocks.get(ctx);
 		Node next = nexts.get(ctx);
-		whileNode.addEdge(next);
+		if (next != null)
+			whileNode.addEdge(next);
 		
 		StatContext bodyTree = ctx.stat();
 		Node body = addNode(bodyTree, bodyTree.getText());
 		whileNode.addEdge(body);
 		
 		blocks.put(bodyTree, body);
-		nexts.put(bodyTree, whileNode);		
+		nexts.put(bodyTree, whileNode);
 	}
 	
 	@Override
@@ -161,7 +167,8 @@ public class TopDownCFGBuilder extends FragmentBaseListener {
 	public void enterPrintStat(PrintStatContext ctx) {
 		Node assign = blocks.get(ctx);
 		Node next = nexts.get(ctx);
-		assign.addEdge(next);
+		if (next != null)
+			assign.addEdge(next);
 	}
 
 	@Override
