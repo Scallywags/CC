@@ -1,0 +1,18 @@
+start:		loadI @n => r_n
+			loadI 1 => r_1
+			loadI 0 => r_z
+			storeAI r_1 => r_arp, @x
+			storeAI r_1 => r_arp, @y
+			storeAI r_1 => r_arp, @z
+while:		cmp_GT r_n, r_1 => r_cmp
+			cbr r_cmp -> body, end
+body:		loadAI r_arp, @x => r_x
+			loadAI r_arp, @y => r_y
+			add r_x, r_y => r_z
+			addI r_y, 0 => r_x
+			addI r_z, 0 => r_y
+			subI r_n, 1 => r_n
+			storeAI r_x => r_arp, @x
+			storeAI r_y => r_arp, @y
+			jumpI -> while
+end:		storeAI r_z => r_arp, @z
