@@ -23,7 +23,7 @@ public class FindTest {
 	@Test
 	//(timeout = 1000)
 	public void simulate() {
-		Program p = assemble("pp/block4/cc/iloc/find");
+		Program p = assemble("linsearch");
 		if (SHOW) {
 			System.out.println(p.prettyPrint());
 		}
