@@ -70,6 +70,14 @@ public class TAttrParser extends Parser {
 		}
 		@Override public int getRuleIndex() { return RULE_t; }
 		@Override
+		public void enterRule(ParseTreeListener listener) {
+			if ( listener instanceof TAttrListener ) ((TAttrListener)listener).enterT(this);
+		}
+		@Override
+		public void exitRule(ParseTreeListener listener) {
+			if ( listener instanceof TAttrListener ) ((TAttrListener)listener).exitT(this);
+		}
+		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
 			if ( visitor instanceof TAttrVisitor ) return ((TAttrVisitor<? extends T>)visitor).visitT(this);
 			else return visitor.visitChildren(this);

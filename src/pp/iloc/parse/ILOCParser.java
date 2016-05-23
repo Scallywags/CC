@@ -73,6 +73,14 @@ public class ILOCParser extends Parser {
 		}
 		@Override public int getRuleIndex() { return RULE_program; }
 		@Override
+		public void enterRule(ParseTreeListener listener) {
+			if ( listener instanceof ILOCListener ) ((ILOCListener)listener).enterProgram(this);
+		}
+		@Override
+		public void exitRule(ParseTreeListener listener) {
+			if ( listener instanceof ILOCListener ) ((ILOCListener)listener).exitProgram(this);
+		}
+		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
 			if ( visitor instanceof ILOCVisitor ) return ((ILOCVisitor<? extends T>)visitor).visitProgram(this);
 			else return visitor.visitChildren(this);
@@ -172,6 +180,14 @@ public class ILOCParser extends Parser {
 		}
 		@Override public int getRuleIndex() { return RULE_decl; }
 		@Override
+		public void enterRule(ParseTreeListener listener) {
+			if ( listener instanceof ILOCListener ) ((ILOCListener)listener).enterDecl(this);
+		}
+		@Override
+		public void exitRule(ParseTreeListener listener) {
+			if ( listener instanceof ILOCListener ) ((ILOCListener)listener).exitDecl(this);
+		}
+		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
 			if ( visitor instanceof ILOCVisitor ) return ((ILOCVisitor<? extends T>)visitor).visitDecl(this);
 			else return visitor.visitChildren(this);
@@ -251,6 +267,14 @@ public class ILOCParser extends Parser {
 		public TerminalNode LSQ() { return getToken(ILOCParser.LSQ, 0); }
 		public InstrListContext(InstrContext ctx) { copyFrom(ctx); }
 		@Override
+		public void enterRule(ParseTreeListener listener) {
+			if ( listener instanceof ILOCListener ) ((ILOCListener)listener).enterInstrList(this);
+		}
+		@Override
+		public void exitRule(ParseTreeListener listener) {
+			if ( listener instanceof ILOCListener ) ((ILOCListener)listener).exitInstrList(this);
+		}
+		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
 			if ( visitor instanceof ILOCVisitor ) return ((ILOCVisitor<? extends T>)visitor).visitInstrList(this);
 			else return visitor.visitChildren(this);
@@ -264,6 +288,14 @@ public class ILOCParser extends Parser {
 			return getRuleContext(LabelContext.class,0);
 		}
 		public SingleInstrContext(InstrContext ctx) { copyFrom(ctx); }
+		@Override
+		public void enterRule(ParseTreeListener listener) {
+			if ( listener instanceof ILOCListener ) ((ILOCListener)listener).enterSingleInstr(this);
+		}
+		@Override
+		public void exitRule(ParseTreeListener listener) {
+			if ( listener instanceof ILOCListener ) ((ILOCListener)listener).exitSingleInstr(this);
+		}
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
 			if ( visitor instanceof ILOCVisitor ) return ((ILOCVisitor<? extends T>)visitor).visitSingleInstr(this);
@@ -395,6 +427,14 @@ public class ILOCParser extends Parser {
 		public TerminalNode COMMENT() { return getToken(ILOCParser.COMMENT, 0); }
 		public CommentContext(OpContext ctx) { copyFrom(ctx); }
 		@Override
+		public void enterRule(ParseTreeListener listener) {
+			if ( listener instanceof ILOCListener ) ((ILOCListener)listener).enterComment(this);
+		}
+		@Override
+		public void exitRule(ParseTreeListener listener) {
+			if ( listener instanceof ILOCListener ) ((ILOCListener)listener).exitComment(this);
+		}
+		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
 			if ( visitor instanceof ILOCVisitor ) return ((ILOCVisitor<? extends T>)visitor).visitComment(this);
 			else return visitor.visitChildren(this);
@@ -415,6 +455,14 @@ public class ILOCParser extends Parser {
 		}
 		public TerminalNode ARROW() { return getToken(ILOCParser.ARROW, 0); }
 		public RealOpContext(OpContext ctx) { copyFrom(ctx); }
+		@Override
+		public void enterRule(ParseTreeListener listener) {
+			if ( listener instanceof ILOCListener ) ((ILOCListener)listener).enterRealOp(this);
+		}
+		@Override
+		public void exitRule(ParseTreeListener listener) {
+			if ( listener instanceof ILOCListener ) ((ILOCListener)listener).exitRealOp(this);
+		}
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
 			if ( visitor instanceof ILOCVisitor ) return ((ILOCVisitor<? extends T>)visitor).visitRealOp(this);
@@ -505,6 +553,14 @@ public class ILOCParser extends Parser {
 		}
 		@Override public int getRuleIndex() { return RULE_sources; }
 		@Override
+		public void enterRule(ParseTreeListener listener) {
+			if ( listener instanceof ILOCListener ) ((ILOCListener)listener).enterSources(this);
+		}
+		@Override
+		public void exitRule(ParseTreeListener listener) {
+			if ( listener instanceof ILOCListener ) ((ILOCListener)listener).exitSources(this);
+		}
+		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
 			if ( visitor instanceof ILOCVisitor ) return ((ILOCVisitor<? extends T>)visitor).visitSources(this);
 			else return visitor.visitChildren(this);
@@ -569,6 +625,14 @@ public class ILOCParser extends Parser {
 		}
 		@Override public int getRuleIndex() { return RULE_targets; }
 		@Override
+		public void enterRule(ParseTreeListener listener) {
+			if ( listener instanceof ILOCListener ) ((ILOCListener)listener).enterTargets(this);
+		}
+		@Override
+		public void exitRule(ParseTreeListener listener) {
+			if ( listener instanceof ILOCListener ) ((ILOCListener)listener).exitTargets(this);
+		}
+		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
 			if ( visitor instanceof ILOCVisitor ) return ((ILOCVisitor<? extends T>)visitor).visitTargets(this);
 			else return visitor.visitChildren(this);
@@ -617,6 +681,14 @@ public class ILOCParser extends Parser {
 		}
 		@Override public int getRuleIndex() { return RULE_label; }
 		@Override
+		public void enterRule(ParseTreeListener listener) {
+			if ( listener instanceof ILOCListener ) ((ILOCListener)listener).enterLabel(this);
+		}
+		@Override
+		public void exitRule(ParseTreeListener listener) {
+			if ( listener instanceof ILOCListener ) ((ILOCListener)listener).exitLabel(this);
+		}
+		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
 			if ( visitor instanceof ILOCVisitor ) return ((ILOCVisitor<? extends T>)visitor).visitLabel(this);
 			else return visitor.visitChildren(this);
@@ -649,6 +721,14 @@ public class ILOCParser extends Parser {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_opCode; }
+		@Override
+		public void enterRule(ParseTreeListener listener) {
+			if ( listener instanceof ILOCListener ) ((ILOCListener)listener).enterOpCode(this);
+		}
+		@Override
+		public void exitRule(ParseTreeListener listener) {
+			if ( listener instanceof ILOCListener ) ((ILOCListener)listener).exitOpCode(this);
+		}
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
 			if ( visitor instanceof ILOCVisitor ) return ((ILOCVisitor<? extends T>)visitor).visitOpCode(this);
@@ -686,6 +766,14 @@ public class ILOCParser extends Parser {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_operand; }
+		@Override
+		public void enterRule(ParseTreeListener listener) {
+			if ( listener instanceof ILOCListener ) ((ILOCListener)listener).enterOperand(this);
+		}
+		@Override
+		public void exitRule(ParseTreeListener listener) {
+			if ( listener instanceof ILOCListener ) ((ILOCListener)listener).exitOperand(this);
+		}
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
 			if ( visitor instanceof ILOCVisitor ) return ((ILOCVisitor<? extends T>)visitor).visitOperand(this);

@@ -16,3 +16,9 @@
 /NumWordGroupLexer.java
 /NumWordGroupLexer.tokens
 /NumWordGroupParser.java
+/BuildingBaseListener.java
+/BuildingListener.java
+/NumWordGroupBaseListener.java
+/NumWordGroupListener.java
+/NumWordBaseListener.java
+/NumWordListener.java

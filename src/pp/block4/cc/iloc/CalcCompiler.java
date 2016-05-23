@@ -35,6 +35,7 @@ public class CalcCompiler extends CalcBaseListener {
 		parser.removeErrorListeners();
 		parser.addErrorListener(listener);
 		ParseTree tree = parser.complete();
+		System.out.println(tree.toStringTree(parser));
 		if (listener.hasErrors()) {
 			System.out.printf("Parse errors in %s:%n", text);
 			for (String error : listener.getErrors()) {
@@ -51,7 +52,8 @@ public class CalcCompiler extends CalcBaseListener {
         prog = new Program();
         ParseTreeWalker tw = new ParseTreeWalker();
         tw.walk(this, tree);
-        prog.addInstr(new Op(OpCode.out, new Str("output: "), result));        
+        prog.addInstr(new Op(OpCode.out, new Str("output: "), result));
+        System.out.println(prog.prettyPrint());
 		return prog;
 	}
 	

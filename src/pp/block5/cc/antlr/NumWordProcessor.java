@@ -1,5 +1,7 @@
 package pp.block5.cc.antlr;
 
+import java.util.List;
+
 import org.antlr.v4.runtime.ANTLRInputStream;
 import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.CommonTokenStream;
@@ -9,9 +11,15 @@ import org.antlr.v4.runtime.tree.ParseTree;
 
 import pp.block5.cc.ErrorListener;
 import pp.block5.cc.ParseException;
+import pp.block5.cc.antlr.NumWordParser.NumberContext;
+import pp.block5.cc.antlr.NumWordParser.SentenceContext;
+import pp.block5.cc.antlr.NumWordParser.WordContext;
 
 /** Prettyprints a (number, word)-sentence and sums up the numbers. */
 public class NumWordProcessor extends NumWordBaseVisitor<Integer> {
+	
+	private StringBuilder builder = new StringBuilder();	
+	
 	public static void main(String[] args) {
 		NumWordProcessor grouper = new NumWordProcessor();
 		if (args.length == 0) {
@@ -56,4 +64,44 @@ public class NumWordProcessor extends NumWordBaseVisitor<Integer> {
 	// Override the visitor methods.
 	// Each visitor method should call visit(child)
 	// if and when it wants to visit that child node.
+	
+	@Override
+	public Integer visitSentence(SentenceContext ctx) {
+		int total = 0;
+		
+		List<ParseTree> children = ctx.children;
+		int size = children.size();
+		if (size == 3) {
+			//just the single numer and word
+			total += Integer.parseInt(children.get(0).getText());
+			builder.append(total).append(" ");
+			builder.append(children.get(1).getText());
+		} else {
+			//iterate over almost all of them.
+			for (int i = 0; i < size - 3; i++) {
+				total += visit(children.get(i));
+			}
+			String lastNum = children.get(size - 3).getText();
+			String lastWord = children.get(size - 2).getText();
+			total += Integer.parseInt(lastNum);
+			builder.append("and ").append(lastNum);
+			builder.append(lastWord);
+		}
+		
+		System.out.println(builder.toString());
+		return total;
+	}
+	
+	@Override
+	public Integer visitNumber(NumberContext ctx) {
+		builder.append(ctx.getText()).append(" ");
+		return Integer.parseInt(ctx.getText());
+	}
+	
+	@Override
+	public Integer visitWord(WordContext ctx) {
+		builder.append(ctx.getText()).append(", ");
+		return 0;
+	}
+	
 }
