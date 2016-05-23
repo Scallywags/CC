@@ -4,3 +4,5 @@
 /DeclUseLexer.tokens
 /DeclUseListener.java
 /DeclUseParser.java
+/DeclUseBaseVisitor.java
+/DeclUseVisitor.java

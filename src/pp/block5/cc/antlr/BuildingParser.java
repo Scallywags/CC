@@ -60,12 +60,9 @@ public class BuildingParser extends Parser {
 		}
 		@Override public int getRuleIndex() { return RULE_building; }
 		@Override
-		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof BuildingListener ) ((BuildingListener)listener).enterBuilding(this);
-		}
-		@Override
-		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof BuildingListener ) ((BuildingListener)listener).exitBuilding(this);
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof BuildingVisitor ) return ((BuildingVisitor<? extends T>)visitor).visitBuilding(this);
+			else return visitor.visitChildren(this);
 		}
 	}
 
@@ -119,12 +116,9 @@ public class BuildingParser extends Parser {
 		}
 		@Override public int getRuleIndex() { return RULE_floor; }
 		@Override
-		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof BuildingListener ) ((BuildingListener)listener).enterFloor(this);
-		}
-		@Override
-		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof BuildingListener ) ((BuildingListener)listener).exitFloor(this);
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof BuildingVisitor ) return ((BuildingVisitor<? extends T>)visitor).visitFloor(this);
+			else return visitor.visitChildren(this);
 		}
 	}
 
@@ -178,12 +172,9 @@ public class BuildingParser extends Parser {
 		}
 		@Override public int getRuleIndex() { return RULE_room; }
 		@Override
-		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof BuildingListener ) ((BuildingListener)listener).enterRoom(this);
-		}
-		@Override
-		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof BuildingListener ) ((BuildingListener)listener).exitRoom(this);
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof BuildingVisitor ) return ((BuildingVisitor<? extends T>)visitor).visitRoom(this);
+			else return visitor.visitChildren(this);
 		}
 	}
 

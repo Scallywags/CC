@@ -16,3 +16,9 @@
 /SimplePascalLexer.tokens
 /SimplePascalListener.java
 /SimplePascalParser.java
+/ArrayPascalBaseVisitor.java
+/ArrayPascalVisitor.java
+/ProcPascalBaseVisitor.java
+/ProcPascalVisitor.java
+/SimplePascalBaseVisitor.java
+/SimplePascalVisitor.java

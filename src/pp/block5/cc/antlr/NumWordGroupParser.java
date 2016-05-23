@@ -66,12 +66,9 @@ public class NumWordGroupParser extends Parser {
 		}
 		@Override public int getRuleIndex() { return RULE_sentence; }
 		@Override
-		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof NumWordGroupListener ) ((NumWordGroupListener)listener).enterSentence(this);
-		}
-		@Override
-		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof NumWordGroupListener ) ((NumWordGroupListener)listener).exitSentence(this);
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof NumWordGroupVisitor ) return ((NumWordGroupVisitor<? extends T>)visitor).visitSentence(this);
+			else return visitor.visitChildren(this);
 		}
 	}
 
@@ -132,12 +129,9 @@ public class NumWordGroupParser extends Parser {
 		}
 		@Override public int getRuleIndex() { return RULE_group; }
 		@Override
-		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof NumWordGroupListener ) ((NumWordGroupListener)listener).enterGroup(this);
-		}
-		@Override
-		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof NumWordGroupListener ) ((NumWordGroupListener)listener).exitGroup(this);
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof NumWordGroupVisitor ) return ((NumWordGroupVisitor<? extends T>)visitor).visitGroup(this);
+			else return visitor.visitChildren(this);
 		}
 	}
 
@@ -174,12 +168,9 @@ public class NumWordGroupParser extends Parser {
 		}
 		@Override public int getRuleIndex() { return RULE_penultimateGroup; }
 		@Override
-		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof NumWordGroupListener ) ((NumWordGroupListener)listener).enterPenultimateGroup(this);
-		}
-		@Override
-		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof NumWordGroupListener ) ((NumWordGroupListener)listener).exitPenultimateGroup(this);
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof NumWordGroupVisitor ) return ((NumWordGroupVisitor<? extends T>)visitor).visitPenultimateGroup(this);
+			else return visitor.visitChildren(this);
 		}
 	}
 
@@ -216,12 +207,9 @@ public class NumWordGroupParser extends Parser {
 		}
 		@Override public int getRuleIndex() { return RULE_lastGroup; }
 		@Override
-		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof NumWordGroupListener ) ((NumWordGroupListener)listener).enterLastGroup(this);
-		}
-		@Override
-		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof NumWordGroupListener ) ((NumWordGroupListener)listener).exitLastGroup(this);
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof NumWordGroupVisitor ) return ((NumWordGroupVisitor<? extends T>)visitor).visitLastGroup(this);
+			else return visitor.visitChildren(this);
 		}
 	}
 
@@ -253,12 +241,9 @@ public class NumWordGroupParser extends Parser {
 		}
 		@Override public int getRuleIndex() { return RULE_number; }
 		@Override
-		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof NumWordGroupListener ) ((NumWordGroupListener)listener).enterNumber(this);
-		}
-		@Override
-		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof NumWordGroupListener ) ((NumWordGroupListener)listener).exitNumber(this);
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof NumWordGroupVisitor ) return ((NumWordGroupVisitor<? extends T>)visitor).visitNumber(this);
+			else return visitor.visitChildren(this);
 		}
 	}
 
@@ -289,12 +274,9 @@ public class NumWordGroupParser extends Parser {
 		}
 		@Override public int getRuleIndex() { return RULE_word; }
 		@Override
-		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof NumWordGroupListener ) ((NumWordGroupListener)listener).enterWord(this);
-		}
-		@Override
-		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof NumWordGroupListener ) ((NumWordGroupListener)listener).exitWord(this);
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof NumWordGroupVisitor ) return ((NumWordGroupVisitor<? extends T>)visitor).visitWord(this);
+			else return visitor.visitChildren(this);
 		}
 	}
 
