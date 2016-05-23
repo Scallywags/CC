@@ -7,19 +7,18 @@ import org.antlr.v4.runtime.Lexer;
 import org.antlr.v4.runtime.TokenStream;
 import org.antlr.v4.runtime.tree.ParseTree;
 
+import org.antlr.v4.runtime.tree.ParseTreeProperty;
+import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import pp.block4.cc.ErrorListener;
-import pp.block4.cc.iloc.CalcParser.CompleteContext;
 import pp.iloc.Simulator;
-import pp.iloc.model.Op;
-import pp.iloc.model.OpCode;
-import pp.iloc.model.Operand;
-import pp.iloc.model.Program;
+import pp.iloc.model.*;
 
 /** Compiler from Calc.g4 to ILOC. */
 public class CalcCompiler extends CalcBaseListener {
 	/** Program under construction. */
 	private Program prog;
 	// Attribute maps and other fields
+    private ParseTreeProperty<Reg> registers = new ParseTreeProperty<>();
 
 	/** Compiles a given expression string into an ILOC program. */
 	public Program compile(String text) {
@@ -47,9 +46,51 @@ public class CalcCompiler extends CalcBaseListener {
 
 	/** Compiles a given Calc-parse tree into an ILOC program. */
 	public Program compile(ParseTree tree) {
-		// TODO Fill in
-		throw new UnsupportedOperationException("Fill in");
+        prog = new Program();
+        ParseTreeWalker tw = new ParseTreeWalker();
+        tw.walk(this, tree);
+		return prog;
 	}
+
+	@Override
+	public void enterNumber(CalcParser.NumberContext ctx) {
+		int number = Integer.parseInt(ctx.NUMBER().getText());
+        Reg reg = new Reg("r_" + number);
+		prog.addInstr(new Op(OpCode.loadI, new Num(number), reg));
+        registers.put(ctx, reg);
+	}
+
+    @Override
+    public void exitTimes(CalcParser.TimesContext ctx) {
+        Reg a = registers.get(ctx.expr(0));
+        Reg b = registers.get(ctx.expr(1));
+        Reg result = new Reg(a.getName() + " mult " + b.getName());
+        prog.addInstr(new Op(OpCode.mult, a, b, result));
+        registers.put(ctx, result);
+    }
+
+    @Override
+    public void enterMinus(CalcParser.MinusContext ctx) {
+        Reg a = registers.get(ctx.expr());
+        Reg result = new Reg("minus " + a.getName());
+        prog.addInstr(new Op(OpCode.multI,a, new Num(-1), result));
+        registers.put(ctx, result);
+    }
+
+    @Override
+    public void exitPlus(CalcParser.PlusContext ctx) {
+        Reg a = registers.get(ctx.expr(0));
+        Reg b = registers.get(ctx.expr(1));
+        Reg result = new Reg(a.getName() + " plus " + b.getName());
+        prog.addInstr(new Op(OpCode.add, a, b, result));
+        registers.put(ctx, result);
+    }
+
+    @Override
+    public void exitPar(CalcParser.ParContext ctx) {
+        Reg a = registers.get(ctx.expr());
+        registers.put(ctx, a);
+    }
 
 	/** Constructs an operation from the parameters 
 	 * and adds it to the program under construction. */
