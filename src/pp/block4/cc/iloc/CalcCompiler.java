@@ -19,6 +19,8 @@ public class CalcCompiler extends CalcBaseListener {
 	private Program prog;
 	// Attribute maps and other fields
     private ParseTreeProperty<Reg> registers = new ParseTreeProperty<>();
+    
+    private Reg result = new Reg("r_result");
 
 	/** Compiles a given expression string into an ILOC program. */
 	public Program compile(String text) {
@@ -49,7 +51,13 @@ public class CalcCompiler extends CalcBaseListener {
         prog = new Program();
         ParseTreeWalker tw = new ParseTreeWalker();
         tw.walk(this, tree);
+        prog.addInstr(new Op(OpCode.out, new Str("output: "), result));        
 		return prog;
+	}
+	
+	@Override
+	public void exitComplete(CalcParser.CompleteContext ctx) {
+		result = registers.get(ctx.expr());
 	}
 
 	@Override
@@ -70,7 +78,7 @@ public class CalcCompiler extends CalcBaseListener {
     }
 
     @Override
-    public void enterMinus(CalcParser.MinusContext ctx) {
+    public void exitMinus(CalcParser.MinusContext ctx) {
         Reg a = registers.get(ctx.expr());
         Reg result = new Reg("minus " + a.getName());
         prog.addInstr(new Op(OpCode.multI,a, new Num(-1), result));
