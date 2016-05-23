@@ -5,6 +5,10 @@ import java.util.List;
 
 import org.antlr.v4.runtime.tree.TerminalNode;
 
+import pp.block3.cc.symbol.DeclUseParser.DeclContext;
+import pp.block3.cc.symbol.DeclUseParser.SeriesContext;
+import pp.block3.cc.symbol.DeclUseParser.UseContext;
+
 public class DeclUseScopeListener extends DeclUseBaseListener {
 	
 	private final SymbolTable table = new MySymbolTable();
