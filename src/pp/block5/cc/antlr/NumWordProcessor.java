@@ -18,7 +18,7 @@ import pp.block5.cc.antlr.NumWordParser.WordContext;
 /** Prettyprints a (number, word)-sentence and sums up the numbers. */
 public class NumWordProcessor extends NumWordBaseVisitor<Integer> {
 	
-	private StringBuilder builder = new StringBuilder();	
+	private StringBuilder builder;
 	
 	public static void main(String[] args) {
 		NumWordProcessor grouper = new NumWordProcessor();
@@ -47,6 +47,7 @@ public class NumWordProcessor extends NumWordBaseVisitor<Integer> {
 	 * Returns the sum of the numbers in the sentence.
 	 */
 	public int group(String text) throws ParseException {
+		builder = new StringBuilder();
 		CharStream chars = new ANTLRInputStream(text);
 		ErrorListener listener = new ErrorListener();
 		Lexer lexer = new NumWordLexer(chars);
