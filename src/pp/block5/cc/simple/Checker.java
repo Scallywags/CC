@@ -10,6 +10,8 @@ import org.antlr.v4.runtime.tree.ParseTreeWalker;
 
 import pp.block5.cc.ParseException;
 import pp.block5.cc.pascal.SimplePascalBaseListener;
+import pp.block5.cc.pascal.SimplePascalParser.*;
+
 /** Class to type check and calculate flow entries and variable offsets. */
 public class Checker extends SimplePascalBaseListener {
 	/** Result of the latest call of {@link #check}. */
@@ -34,7 +36,15 @@ public class Checker extends SimplePascalBaseListener {
 		return this.result;
 	}
 
-	// Override the listener methods for the statement nodes
+// 	TODO Override the listener methods for the statement nodes
+//	
+//	stat: target ASS expr                #assStat
+//    | IF expr THEN stat (ELSE stat)? #ifStat
+//    | WHILE expr DO stat             #whileStat
+//    | block                          #blockStat
+//    | IN LPAR STR COMMA target RPAR  #inStat  // auxiliary, not Pascal
+//    | OUT LPAR STR COMMA expr RPAR   #outStat // auxiliary, not Pascal
+	
 	@Override
 	public void exitBoolExpr(BoolExprContext ctx) {
 		checkType(ctx.expr(0), Type.BOOL);

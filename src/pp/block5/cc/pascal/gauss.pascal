@@ -6,7 +6,7 @@ var max : integer;
 
 begin
     in ("max", max);
-    while number LE max do
+    while number <= max do
         begin
             total := total + number;
             number := number  + 1
