@@ -7,6 +7,7 @@ import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
+import org.antlr.v4.runtime.tree.TerminalNode;
 
 import pp.block5.cc.ParseException;
 import pp.block5.cc.pascal.SimplePascalBaseListener;
@@ -20,6 +21,8 @@ public class Checker extends SimplePascalBaseListener {
 	private Scope scope;
 	/** List of errors collected in the latest call of {@link #check}. */
 	private List<String> errors;
+	
+	private int offset = 0;
 
 	/** Runs this checker on a given parse tree,
 	 * and returns the checker result.
@@ -36,14 +39,79 @@ public class Checker extends SimplePascalBaseListener {
 		return this.result;
 	}
 
+//	TODO Override the listener methods for the declaration nodes
+//	decl: VAR (var SEMI)+                  #varDecl
+
 // 	TODO Override the listener methods for the statement nodes
 //	
-//	stat: target ASS expr                #assStat
-//    | IF expr THEN stat (ELSE stat)? #ifStat
-//    | WHILE expr DO stat             #whileStat
-//    | block                          #blockStat
-//    | IN LPAR STR COMMA target RPAR  #inStat  // auxiliary, not Pascal
-//    | OUT LPAR STR COMMA expr RPAR   #outStat // auxiliary, not Pascal
+//	stat	: target ASS expr   	          	#assStat
+//    		| IF expr THEN stat (ELSE stat)?	#ifStat
+//    		| WHILE expr DO stat             	#whileStat
+//    		| block                          	#blockStat
+//    		| IN LPAR STR COMMA target RPAR  	#inStat  // auxiliary, not Pascal
+//    		| OUT LPAR STR COMMA expr RPAR   	#outStat // auxiliary, not Pascal
+	
+	//---------- Declaration -----------
+	
+	@Override
+	public void exitVarDecl(VarDeclContext ctx) {
+		for (VarContext var : ctx.var()) {
+			Type type = result.getType(var.type());
+			result.setType(var, type);
+			result.setOffset(var, offset);
+			offset += type.size();
+		}
+		result.setEntry(ctx, ctx.var(0));
+	}
+	
+	public void exitVar(VarContext ctx) {
+		result.setType(ctx, result.getType(ctx.type()));
+	}
+	
+	public void exitIntType(IntTypeContext ctx) {
+		result.setType(ctx, Type.INT);
+	}
+	
+	public void exitBoolType(BoolTypeContext ctx) {
+		result.setType(ctx, Type.BOOL);
+	}
+	
+	//---------- Statements -----------
+	
+	@Override
+	public void exitAssStat(AssStatContext ctx) {
+		Type type = result.getType(ctx.target());
+		checkType(ctx.expr(), type);
+		result.setType(ctx, type);
+		result.setEntry(ctx, ctx.expr());
+	}
+	
+	@Override
+	public void exitIfStat(IfStatContext ctx) {
+		result.setEntry(ctx, ctx.expr());
+	}
+	
+	@Override
+	public void exitWhileStat(WhileStatContext ctx) {
+		result.setEntry(ctx, ctx.expr());
+	}
+	
+	@Override
+	public void exitBlockStat(BlockStatContext ctx) {
+		result.setEntry(ctx, ctx.block().stat(0));
+	}
+	
+	@Override
+	public void exitInStat(InStatContext ctx) {
+		result.setEntry(ctx, ctx.target());
+	}
+	
+	@Override
+	public void exitOutStat(OutStatContext ctx) {
+		result.setEntry(ctx, ctx.expr());
+	}
+	
+	//---------- Expressions -----------
 	
 	@Override
 	public void exitBoolExpr(BoolExprContext ctx) {
