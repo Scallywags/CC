@@ -6,6 +6,12 @@ import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.ParseTreeProperty;
 
 import pp.block5.cc.pascal.SimplePascalBaseVisitor;
+import pp.block5.cc.pascal.SimplePascalParser.BlockContext;
+import pp.block5.cc.pascal.SimplePascalParser.BodyContext;
+import pp.block5.cc.pascal.SimplePascalParser.DeclContext;
+import pp.block5.cc.pascal.SimplePascalParser.ProgramContext;
+import pp.block5.cc.pascal.SimplePascalParser.VarContext;
+import pp.block5.cc.pascal.SimplePascalParser.VarDeclContext;
 import pp.iloc.Simulator;
 import pp.iloc.model.Label;
 import pp.iloc.model.Num;
@@ -47,6 +53,51 @@ public class Generator extends SimplePascalBaseVisitor<Op> {
 		return this.prog;
 	}
 
+	@Override
+	public Op visitProgram(ProgramContext ctx) {
+		return visit(ctx.body());
+	}
+
+	@Override
+	public Op visitBody(BodyContext ctx) {
+		if (ctx.decl().size() > 0) {
+			Op declOp = visit(ctx.decl(0));
+			for (int i = 1; i < ctx.decl().size(); i++) {
+				visit(ctx.decl().get(i));
+			}
+			visit(ctx.block());
+			return declOp;
+		} else {
+			return visit(ctx.block());
+		}
+	}
+
+	@Override
+	public Op visitVarDecl(VarDeclContext ctx) {
+		for (int i = 1; i < ctx.var().size(); i++) {
+			visit(ctx.var().get(i));
+		}
+		return visit(ctx.var(0));
+	}
+
+	@Override
+	public Op visitVar(VarContext ctx) {
+		return emit(OpCode.loadI, new Num(0), reg(ctx));
+	}
+	
+	@Override
+	public Op visitBlock(BlockContext ctx) {
+		for (int i = 1; i < ctx.stat().size(); i++) {
+			visit(ctx.stat(i));
+		}
+		Op op = visit(ctx.stat(0));
+		op.setLabel(label(ctx));
+		return op;
+	}
+	
+	//TODO statements, expressions, (and more?)
+	
+
 	// Override the visitor methods
 	/** Constructs an operation from the parameters 
 	 * and adds it to the program under construction. */
@@ -59,7 +110,7 @@ public class Generator extends SimplePascalBaseVisitor<Op> {
 	/** Constructs an operation from the parameters 
 	 * and adds it to the program under construction. */
 	private Op emit(OpCode opCode, Operand... args) {
-		return emit((Label) null, opCode, args);
+		return emit(null, opCode, args);
 	}
 
 	/** 

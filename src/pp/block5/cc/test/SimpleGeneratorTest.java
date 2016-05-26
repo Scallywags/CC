@@ -1,7 +1,6 @@
 package pp.block5.cc.test;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -17,7 +16,7 @@ import pp.iloc.model.Program;
 
 @SuppressWarnings("javadoc")
 public class SimpleGeneratorTest {
-	private final static String BASE_DIR = "pp/block5/cc/sample";
+	private final static String BASE_DIR = "src/pp/block5/cc/sample";
 	private final static String EXT = ".pascal";
 	private final SimplePascalCompiler compiler = SimplePascalCompiler
 			.instance();
