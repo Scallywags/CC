@@ -21,8 +21,6 @@ public class Checker extends SimplePascalBaseListener {
 	private Scope scope;
 	/** List of errors collected in the latest call of {@link #check}. */
 	private List<String> errors;
-	
-	private int offset = 0;
 
 	/** Runs this checker on a given parse tree,
 	 * and returns the checker result.
@@ -55,28 +53,43 @@ public class Checker extends SimplePascalBaseListener {
 	
 	@Override
 	public void exitVarDecl(VarDeclContext ctx) {
-		for (VarContext var : ctx.var()) {
-			Type type = result.getType(var.type());
-			result.setType(var, type);
-			result.setOffset(var, offset);
-			offset += type.size();
-		}
 		result.setEntry(ctx, ctx.var(0));
 	}
 	
+	@Override
 	public void exitVar(VarContext ctx) {
+		for (TerminalNode id : ctx.ID()) {
+			Type type = result.getType(ctx.type());			
+			scope.put(id.getText(), type);
+			result.setType(id, type);
+		}
+		result.setEntry(ctx, ctx.type());
 		result.setType(ctx, result.getType(ctx.type()));
 	}
 	
+	@Override
 	public void exitIntType(IntTypeContext ctx) {
 		result.setType(ctx, Type.INT);
 	}
 	
+	@Override
 	public void exitBoolType(BoolTypeContext ctx) {
 		result.setType(ctx, Type.BOOL);
 	}
 	
+	@Override
+	public void exitIdTarget(IdTargetContext ctx) {
+		Type identifierType = scope.type(ctx.ID().getText());
+		result.setType(ctx, identifierType);
+		result.setOffset(ctx, scope.offset(ctx.ID().getText()));
+	}
+	
 	//---------- Statements -----------
+	
+	@Override
+	public void exitBlock(BlockContext ctx) {
+		result.setEntry(ctx, result.getEntry(ctx.getChild(1)));
+	}
 	
 	@Override
 	public void exitAssStat(AssStatContext ctx) {
@@ -88,6 +101,7 @@ public class Checker extends SimplePascalBaseListener {
 	
 	@Override
 	public void exitIfStat(IfStatContext ctx) {
+		checkType(ctx.expr(), Type.BOOL);
 		result.setEntry(ctx, ctx.expr());
 	}
 	
