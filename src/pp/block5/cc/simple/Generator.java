@@ -58,6 +58,9 @@ public class Generator extends SimplePascalBaseVisitor<Op> {
 		this.labels = new ParseTreeProperty<>();
 		this.regCount = 0;
 		tree.accept(this);
+		
+		System.out.println("PROGRAM\n" + prog.prettyPrint());
+		
 		return this.prog;
 	}
 	
