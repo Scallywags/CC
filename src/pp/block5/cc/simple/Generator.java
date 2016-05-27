@@ -1,5 +1,7 @@
 package pp.block5.cc.simple;
 
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -41,7 +43,7 @@ public class Generator extends SimplePascalBaseVisitor<Op> {
 	private int regCount;
 	/** Association of expression and target nodes to registers. */
 	private ParseTreeProperty<Reg> regs;
-	
+
 	private Map<String, Reg> vars;
 
 	/** Generates ILOC code for a given parse tree,
@@ -49,7 +51,7 @@ public class Generator extends SimplePascalBaseVisitor<Op> {
 	 */
 	public Program generate(ParseTree tree, Result checkResult) {
 		vars = new HashMap<>();
-		
+
 		this.prog = new Program();
 		this.checkResult = checkResult;
 		this.regs = new ParseTreeProperty<>();
@@ -58,6 +60,8 @@ public class Generator extends SimplePascalBaseVisitor<Op> {
 		tree.accept(this);
 		return this.prog;
 	}
+	
+	//------------ VISIT METHODS -------------
 
 	@Override
 	public Op visitProgram(ProgramContext ctx) {
@@ -97,7 +101,7 @@ public class Generator extends SimplePascalBaseVisitor<Op> {
 		vars.put(ctx.ID(0).getText(), reg);
 		return emit(OpCode.loadI, new Num(0), reg);
 	}
-	
+
 	@Override
 	public Op visitBlock(BlockContext ctx) {
 		Op op = visit(ctx.stat(0));
@@ -108,21 +112,21 @@ public class Generator extends SimplePascalBaseVisitor<Op> {
 		return op;
 	}
 	
-	//TODO expressions
-	
+	//------------- STATEMENTS -------------
+
 	@Override
 	public Op visitAssStat(AssStatContext ctx) {
-		visit(ctx.expr());	//TODO put value in register.
+		visit(ctx.expr());
 		Reg exprReg = regs.get(ctx.expr());
 		Reg targReg = vars.get(ctx.target().getText()); //ID
-		
+
 		return emit(OpCode.i2i, exprReg, targReg);
 	}
-	
+
 	@Override
 	public Op visitIfStat(IfStatContext ctx) {
 		Reg r_cmp = regs.get(ctx.expr());
-		
+
 		Op op = emit(OpCode.cbr, r_cmp);
 
 		StatContext then = ctx.stat(0);
@@ -130,7 +134,7 @@ public class Generator extends SimplePascalBaseVisitor<Op> {
 		Label thenLabel = label(then);
 		thenOp.setLabel(thenLabel);
 		op.getArgs().add(thenLabel);
-		
+
 		Label elseLabel;
 		if (ctx.stat().size() > 1) {
 			StatContext elseStat = ctx.stat(1);
@@ -142,68 +146,68 @@ public class Generator extends SimplePascalBaseVisitor<Op> {
 			elseLabel = label(ctx);
 			nop.setLabel(elseLabel);
 		}
-		
+
 		op.getArgs().add(elseLabel);
 		return op;
 	}
-	
+
 	@Override
 	public Op visitWhileStat(WhileStatContext ctx) {
 		Op exprOp = visit(ctx.expr());
 		Reg r_cmp = regs.get(ctx.expr());
 		Label whileLabel = label(ctx);
 		exprOp.setLabel(whileLabel);
-		
+
 		Op whileOp = emit(OpCode.cbr, r_cmp);
-		
+
 		StatContext body = ctx.stat();
 		Op op = visit(body);
 		Label bodyLabel = label(body);
 		op.setLabel(bodyLabel);
 		whileOp.getArgs().add(bodyLabel);
 		emit(OpCode.jump, whileOp.getLabel());
-		
+
 		Op nop = emit(OpCode.nop);
 		Label afterLabel = new Label("AfterWhile_" + whileLabel);
 		nop.setLabel(afterLabel);
 		whileOp.getArgs().add(afterLabel);
-		
+
 		return whileOp;
 	}
-	
+
 	@Override
 	public Op visitBlockStat(BlockStatContext ctx) {
 		return visit(ctx.block());
 	}
-	
+
 	@Override
 	public Op visitInStat(InStatContext ctx) {
 		return emit(OpCode.in, new Str(ctx.STR().getText()), vars.get(ctx.target().getText()));
 	}
-	
+
 	@Override
 	public Op visitOutStat(OutStatContext ctx) {
 		visit(ctx.expr());
 		return emit(OpCode.out, new Str(ctx.STR().getText()), regs.get(ctx.expr()));
 	}
-	
-	//TODO ALL THE EXPRESSIONS
-	
+
+	//------------- EXPRESSIONS ------------
+
 	@Override
 	public Op visitPrfExpr(PrfExprContext ctx) {
+		Reg reg = reg(ctx);
+
 		visit(ctx.expr());
+		Op op = visit(ctx.prfOp());
+		
 		Reg exprReg = regs.get(ctx.expr());
-		Reg myReg = reg(ctx);
-		setReg(ctx, myReg);
-		switch(ctx.prfOp().getText().toUpperCase()) {
-			case "MINUS":
-				return emit(OpCode.multI, exprReg, new Num(-1), myReg);
-			case "NOT":
-				return emit(OpCode.xorI, exprReg, TRUE_VALUE, myReg);
-		}
-		return null;	
+				
+		op.getArgs().set(0, exprReg);
+		op.getArgs().set(2, reg);
+		
+		return op;
 	}
-	
+
 	@Override
 	public Op visitMultExpr(MultExprContext ctx) {
 		Reg reg = reg(ctx);
@@ -215,18 +219,170 @@ public class Generator extends SimplePascalBaseVisitor<Op> {
 		op.getArgs().add(reg);		
 		return op;
 	}
-	
-	
-	
-	
 
-	// Override the visitor methods
+	@Override
+	public Op visitPlusExpr(PlusExprContext ctx) {
+		Reg reg = reg(ctx);
+		visit(ctx.expr(0));
+		visit(ctx.expr(1));
+		Op op = visit(ctx.plusOp());
+		op.getArgs().add(regs.get(ctx.expr(0)));
+		op.getArgs().add(regs.get(ctx.expr(1)));
+		op.getArgs().add(reg);
+		return op;
+	}
+
+	@Override
+	public Op visitCompExpr(CompExprContext ctx) {
+		Reg reg = reg(ctx);
+		visit(ctx.expr(0));
+		visit(ctx.expr(1));
+		Op op = visit(ctx.compOp());
+		op.getArgs().add(regs.get(ctx.expr(0)));
+		op.getArgs().add(regs.get(ctx.expr(1)));
+		op.getArgs().add(reg);
+		return op;
+	}
+
+	@Override
+	public Op visitBoolExpr(BoolExprContext ctx) {
+		Reg reg = reg(ctx);
+		visit(ctx.expr(0));
+		visit(ctx.expr(1));
+		Op op = visit(ctx.boolOp());
+		op.getArgs().add(regs.get(ctx.expr(0)));
+		op.getArgs().add(regs.get(ctx.expr(1)));
+		op.getArgs().add(reg);
+		return op;
+	}
+	
+	@Override
+	public Op visitParExpr(ParExprContext ctx) {
+		Op op = visit(ctx.expr());
+		setReg(ctx, regs.get(ctx.expr()));
+		return op;
+	}
+	
+	@Override
+	public Op visitIdExpr(IdExprContext ctx) {
+		Reg reg = vars.get(ctx.getText());
+		setReg(ctx, reg);
+		
+		return null; //TODO use loadI or LoadAO? probably not.
+	}
+	
+	@Override
+	public Op visitNumExpr(NumExprContext ctx) {
+		Reg reg = reg(ctx);
+		return emit(OpCode.loadI, new Num(Integer.parseInt(ctx.NUM().getText())), reg);
+	}
+	
+	@Override
+	public Op visitTrueExpr(TrueExprContext ctx) {
+		Reg reg = reg(ctx);
+		return emit(OpCode.loadI, TRUE_VALUE, reg);
+	}
+	
+	@Override
+	public Op visitFalseExpr(FalseExprContext ctx) {
+		Reg reg = reg(ctx);
+		return emit(OpCode.loadI, FALSE_VALUE, reg);
+	}
+	
+	//------------- OPERATORS -------------
+	
+	@Override
+	public Op visitPrfOp(PrfOpContext ctx) {		
+		switch(ctx.getText().toUpperCase()) {
+		case "-":
+			return emit(OpCode.multI, null, new Num(-1), null);
+		case "NOT":
+			return emit(OpCode.xorI, null, TRUE_VALUE, null);
+		}
+		throw new IllegalArgumentException("PrefixOperator has text: \"" + ctx.getText() + "\"");
+	}
+	
+	@Override
+	public Op visitMultOp(MultOpContext ctx) {
+		switch (ctx.getText()) {
+		case "*":
+			return emit(OpCode.mult);
+		case "/":
+			return emit(OpCode.div);
+		}
+		throw new IllegalArgumentException("MultOperator has text: \"" + ctx.getText() + "\"");
+	}
+	
+	@Override
+	public Op visitPlusOp(PlusOpContext ctx) {
+		switch (ctx.getText()) {
+		case "+":
+			return emit(OpCode.add);
+		case "-":
+			return emit(OpCode.sub);
+		}
+		throw new IllegalArgumentException("PlusOperator has text: \"" + ctx.getText() + "\"");
+	}
+	
+	@Override
+	public Op visitBoolOp(BoolOpContext ctx) {
+		switch (ctx.getText().toUpperCase()) {
+		case "AND":
+			return emit(OpCode.and);
+		case "OR":
+			return emit(OpCode.or);
+		}
+		throw new IllegalArgumentException("BoolOperator has text: \"" + ctx.getText() + "\"");
+	}
+	
+	@Override
+	public Op visitCompOp(CompOpContext ctx) {
+		switch (ctx.getText()) {
+		case "<=":
+			return emit(OpCode.cmp_LE);
+		case "<":
+			return emit(OpCode.cmp_LT);
+		case ">=":
+			return emit(OpCode.cmp_GE);
+		case ">":
+			return emit(OpCode.cmp_GT);
+		case "=":
+			return emit(OpCode.cmp_EQ);
+		case "<>":
+			return emit(OpCode.cmp_NE);
+		}
+		throw new IllegalArgumentException("CompOperator has text: \"" + ctx.getText() + "\"");
+	}
+
 	/** Constructs an operation from the parameters 
 	 * and adds it to the program under construction. */
 	private Op emit(Label label, OpCode opCode, Operand... args) {
-		Op result = new Op(label, opCode, args);
-		this.prog.addInstr(result);
-		return result;
+		//bypass ALL OF THE annoying checks
+		Op instruction = new Op(label, OpCode.nop);
+		instruction.getArgs().addAll(Arrays.asList(args));
+		try {
+			Field opCodeField = Op.class.getDeclaredField("opCode");
+			opCodeField.setAccessible(true);
+
+			Field modifiersField = Field.class.getDeclaredField("modifiers");
+			modifiersField.setAccessible(true);
+			modifiersField.setInt(opCodeField, opCodeField.getModifiers() & ~Modifier.FINAL);
+
+			opCodeField.set(instruction, opCode);
+			
+		} catch (NoSuchFieldException | SecurityException | IllegalAccessException e) {
+			//I hope this won't occur.
+			e.printStackTrace();
+		}
+
+
+		this.prog.addInstr(instruction);
+		return instruction;
+
+		//		-- original --
+		//		Op result = new Op(label, opCode, args);
+		//		this.prog.addInstr(result);
+		//		return result;
 	}
 
 	/** Constructs an operation from the parameters 
