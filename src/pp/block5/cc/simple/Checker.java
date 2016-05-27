@@ -36,18 +36,6 @@ public class Checker extends SimplePascalBaseListener {
 		}
 		return this.result;
 	}
-
-//	TODO Override the listener methods for the declaration nodes
-//	decl: VAR (var SEMI)+                  #varDecl
-
-// 	TODO Override the listener methods for the statement nodes
-//	
-//	stat	: target ASS expr   	          	#assStat
-//    		| IF expr THEN stat (ELSE stat)?	#ifStat
-//    		| WHILE expr DO stat             	#whileStat
-//    		| block                          	#blockStat
-//    		| IN LPAR STR COMMA target RPAR  	#inStat  // auxiliary, not Pascal
-//    		| OUT LPAR STR COMMA expr RPAR   	#outStat // auxiliary, not Pascal
 	
 	//---------- Declaration -----------
 	

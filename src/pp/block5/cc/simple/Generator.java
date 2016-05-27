@@ -1,17 +1,18 @@
 package pp.block5.cc.simple;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
+
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.ParseTreeProperty;
+import org.antlr.v4.runtime.tree.TerminalNode;
 
 import pp.block5.cc.pascal.SimplePascalBaseVisitor;
-import pp.block5.cc.pascal.SimplePascalParser.BlockContext;
-import pp.block5.cc.pascal.SimplePascalParser.BodyContext;
-import pp.block5.cc.pascal.SimplePascalParser.DeclContext;
-import pp.block5.cc.pascal.SimplePascalParser.ProgramContext;
-import pp.block5.cc.pascal.SimplePascalParser.VarContext;
-import pp.block5.cc.pascal.SimplePascalParser.VarDeclContext;
+import pp.block5.cc.pascal.SimplePascalParser.*;
 import pp.iloc.Simulator;
 import pp.iloc.model.Label;
 import pp.iloc.model.Num;
@@ -20,6 +21,7 @@ import pp.iloc.model.OpCode;
 import pp.iloc.model.Operand;
 import pp.iloc.model.Program;
 import pp.iloc.model.Reg;
+import pp.iloc.model.Str;
 /** Class to generate ILOC code for Simple Pascal. */
 public class Generator extends SimplePascalBaseVisitor<Op> {
 	/** The representation of the boolean value <code>false</code>. */
@@ -39,11 +41,15 @@ public class Generator extends SimplePascalBaseVisitor<Op> {
 	private int regCount;
 	/** Association of expression and target nodes to registers. */
 	private ParseTreeProperty<Reg> regs;
+	
+	private Map<String, Reg> vars;
 
 	/** Generates ILOC code for a given parse tree,
 	 * given a pre-computed checker result.
 	 */
 	public Program generate(ParseTree tree, Result checkResult) {
+		vars = new HashMap<>();
+		
 		this.prog = new Program();
 		this.checkResult = checkResult;
 		this.regs = new ParseTreeProperty<>();
@@ -82,20 +88,136 @@ public class Generator extends SimplePascalBaseVisitor<Op> {
 
 	@Override
 	public Op visitVar(VarContext ctx) {
-		return emit(OpCode.loadI, new Num(0), reg(ctx));
+		for (int i = 1; i < ctx.ID().size(); i++) {
+			Reg reg = reg(ctx.ID(i));
+			vars.put(ctx.ID(i).getText(), reg);
+			emit(OpCode.loadI, new Num(0), reg);
+		}
+		Reg reg = reg(ctx.ID(0));
+		vars.put(ctx.ID(0).getText(), reg);
+		return emit(OpCode.loadI, new Num(0), reg);
 	}
 	
 	@Override
 	public Op visitBlock(BlockContext ctx) {
+		Op op = visit(ctx.stat(0));
 		for (int i = 1; i < ctx.stat().size(); i++) {
 			visit(ctx.stat(i));
 		}
-		Op op = visit(ctx.stat(0));
 		op.setLabel(label(ctx));
 		return op;
 	}
 	
-	//TODO statements, expressions, (and more?)
+	//TODO expressions
+	
+	@Override
+	public Op visitAssStat(AssStatContext ctx) {
+		visit(ctx.expr());	//TODO put value in register.
+		Reg exprReg = regs.get(ctx.expr());
+		Reg targReg = vars.get(ctx.target().getText()); //ID
+		
+		return emit(OpCode.i2i, exprReg, targReg);
+	}
+	
+	@Override
+	public Op visitIfStat(IfStatContext ctx) {
+		Reg r_cmp = regs.get(ctx.expr());
+		
+		Op op = emit(OpCode.cbr, r_cmp);
+
+		StatContext then = ctx.stat(0);
+		Op thenOp = visit(then);
+		Label thenLabel = label(then);
+		thenOp.setLabel(thenLabel);
+		op.getArgs().add(thenLabel);
+		
+		Label elseLabel;
+		if (ctx.stat().size() > 1) {
+			StatContext elseStat = ctx.stat(1);
+			Op elseOp = visit(elseStat);
+			elseLabel = label(elseStat);
+			elseOp.setLabel(elseLabel);
+		} else {
+			Op nop = emit(OpCode.nop);
+			elseLabel = label(ctx);
+			nop.setLabel(elseLabel);
+		}
+		
+		op.getArgs().add(elseLabel);
+		return op;
+	}
+	
+	@Override
+	public Op visitWhileStat(WhileStatContext ctx) {
+		Op exprOp = visit(ctx.expr());
+		Reg r_cmp = regs.get(ctx.expr());
+		Label whileLabel = label(ctx);
+		exprOp.setLabel(whileLabel);
+		
+		Op whileOp = emit(OpCode.cbr, r_cmp);
+		
+		StatContext body = ctx.stat();
+		Op op = visit(body);
+		Label bodyLabel = label(body);
+		op.setLabel(bodyLabel);
+		whileOp.getArgs().add(bodyLabel);
+		emit(OpCode.jump, whileOp.getLabel());
+		
+		Op nop = emit(OpCode.nop);
+		Label afterLabel = new Label("AfterWhile_" + whileLabel);
+		nop.setLabel(afterLabel);
+		whileOp.getArgs().add(afterLabel);
+		
+		return whileOp;
+	}
+	
+	@Override
+	public Op visitBlockStat(BlockStatContext ctx) {
+		return visit(ctx.block());
+	}
+	
+	@Override
+	public Op visitInStat(InStatContext ctx) {
+		return emit(OpCode.in, new Str(ctx.STR().getText()), vars.get(ctx.target().getText()));
+	}
+	
+	@Override
+	public Op visitOutStat(OutStatContext ctx) {
+		visit(ctx.expr());
+		return emit(OpCode.out, new Str(ctx.STR().getText()), regs.get(ctx.expr()));
+	}
+	
+	//TODO ALL THE EXPRESSIONS
+	
+	@Override
+	public Op visitPrfExpr(PrfExprContext ctx) {
+		visit(ctx.expr());
+		Reg exprReg = regs.get(ctx.expr());
+		Reg myReg = reg(ctx);
+		setReg(ctx, myReg);
+		switch(ctx.prfOp().getText().toUpperCase()) {
+			case "MINUS":
+				return emit(OpCode.multI, exprReg, new Num(-1), myReg);
+			case "NOT":
+				return emit(OpCode.xorI, exprReg, TRUE_VALUE, myReg);
+		}
+		return null;	
+	}
+	
+	@Override
+	public Op visitMultExpr(MultExprContext ctx) {
+		Reg reg = reg(ctx);
+		visit(ctx.expr(0));
+		visit(ctx.expr(1));
+		Op op = visit(ctx.multOp());
+		op.getArgs().add(regs.get(ctx.expr(0)));
+		op.getArgs().add(regs.get(ctx.expr(1)));
+		op.getArgs().add(reg);		
+		return op;
+	}
+	
+	
+	
 	
 
 	// Override the visitor methods
