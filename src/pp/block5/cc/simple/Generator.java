@@ -108,7 +108,6 @@ public class Generator extends SimplePascalBaseVisitor<Op> {
 		for (int i = 1; i < ctx.stat().size(); i++) {
 			visit(ctx.stat(i));
 		}
-		op.setLabel(label(ctx));
 		return op;
 	}
 	
@@ -125,54 +124,68 @@ public class Generator extends SimplePascalBaseVisitor<Op> {
 
 	@Override
 	public Op visitIfStat(IfStatContext ctx) {
-		Reg r_cmp = regs.get(ctx.expr());
+		ExprContext expr = ctx.expr();
+		Op exprOp = visit(expr);
+		Reg r_cmp = reg(expr);
 
-		Op op = emit(OpCode.cbr, r_cmp);
+		Op ifOp = emit(OpCode.cbr, r_cmp);
 
 		StatContext then = ctx.stat(0);
 		Op thenOp = visit(then);
 		Label thenLabel = label(then);
 		thenOp.setLabel(thenLabel);
-		op.getArgs().add(thenLabel);
 
-		Label elseLabel;
-		if (ctx.stat().size() > 1) {
+		ifOp.getArgs().add(thenLabel);
+
+		Label endifLabel = new Label("endif_" + label(ctx));
+		if (ctx.stat().size() == 1) {
+			//NO ELSE
+			Op endif = emit(OpCode.nop);
+			endif.setLabel(endifLabel);
+			ifOp.getArgs().add(endifLabel);
+		} else {
+			//ELSE
+			emit(OpCode.jumpI, endifLabel);		//after de body.
+
 			StatContext elseStat = ctx.stat(1);
 			Op elseOp = visit(elseStat);
-			elseLabel = label(elseStat);
+			Label elseLabel = label(elseStat);
 			elseOp.setLabel(elseLabel);
-		} else {
-			Op nop = emit(OpCode.nop);
-			elseLabel = label(ctx);
-			nop.setLabel(elseLabel);
+			ifOp.getArgs().add(elseLabel);
+
+			Op endif = emit(OpCode.nop);
+			endif.setLabel(endifLabel);
 		}
 
-		op.getArgs().add(elseLabel);
-		return op;
+		return exprOp;
 	}
 
 	@Override
 	public Op visitWhileStat(WhileStatContext ctx) {
-		Op exprOp = visit(ctx.expr());
-		Reg r_cmp = regs.get(ctx.expr());
+		Op nop = emit(OpCode.nop);
+		
+		ExprContext expr = ctx.expr();
+		Op exprOp = visit(expr);
 		Label whileLabel = label(ctx);
 		exprOp.setLabel(whileLabel);
-
-		Op whileOp = emit(OpCode.cbr, r_cmp);
-
-		StatContext body = ctx.stat();
-		Op op = visit(body);
-		Label bodyLabel = label(body);
-		op.setLabel(bodyLabel);
-		whileOp.getArgs().add(bodyLabel);
-		emit(OpCode.jump, whileOp.getLabel());
-
-		Op nop = emit(OpCode.nop);
-		Label afterLabel = new Label("AfterWhile_" + whileLabel);
-		nop.setLabel(afterLabel);
-		whileOp.getArgs().add(afterLabel);
-
-		return whileOp;
+		
+		Op compare = emit(OpCode.cbr, reg(expr));	//todo append body and endlabels
+		
+		StatContext stat = ctx.stat();
+		Op body = visit(stat);
+		Label bodyLabel = new Label("body_" + whileLabel);
+		body.setLabel(bodyLabel);
+		
+		emit(OpCode.jumpI, whileLabel);
+		
+		Op endWhile = emit(OpCode.nop);
+		Label endWhileLabel = new Label("endwhile_" + whileLabel);
+		endWhile.setLabel(endWhileLabel);
+		
+		compare.getArgs().add(bodyLabel);
+		compare.getArgs().add(endWhileLabel);
+		
+		return nop;
 	}
 
 	@Override
