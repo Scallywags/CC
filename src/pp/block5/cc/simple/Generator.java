@@ -42,6 +42,9 @@ public class Generator extends SimplePascalBaseVisitor<Op> {
 	/** Association of expression and target nodes to registers. */
 	private ParseTreeProperty<Reg> regs;
 
+	/** Scope containing the id->register mappings.
+	 *  Right now there is just one since this is SimplePascal
+	 **/
 	private Map<String, Reg> vars;	//register to register, here we go! :D
 
 	/** Generates ILOC code for a given parse tree,
@@ -56,8 +59,6 @@ public class Generator extends SimplePascalBaseVisitor<Op> {
 		this.labels = new ParseTreeProperty<>();
 		this.regCount = 0;
 		tree.accept(this);
-		
-		System.out.println("PROGRAM\n" + prog.prettyPrint());
 		
 		return this.prog;
 	}
@@ -214,8 +215,9 @@ public class Generator extends SimplePascalBaseVisitor<Op> {
 
 	@Override
 	public Op visitOutStat(OutStatContext ctx) {
-		visit(ctx.expr());
-		return emit(OpCode.out, new Str(ctx.STR().getText()), regs.get(ctx.expr()));
+		Op exprOp = visit(ctx.expr());
+		emit(OpCode.out, new Str(ctx.STR().getText()), regs.get(ctx.expr()));
+		return exprOp;
 	}
 
 	//------------- EXPRESSIONS ------------
@@ -224,7 +226,7 @@ public class Generator extends SimplePascalBaseVisitor<Op> {
 	public Op visitPrfExpr(PrfExprContext ctx) {
 		Reg reg = reg(ctx);
 
-		visit(ctx.expr());
+		Op exprOp = visit(ctx.expr());
 		Op op = visit(ctx.prfOp());
 		
 		Reg exprReg = regs.get(ctx.expr());
@@ -232,55 +234,55 @@ public class Generator extends SimplePascalBaseVisitor<Op> {
 		op.getArgs().set(0, exprReg);
 		op.getArgs().set(2, reg);
 		
-		return op;
+		return exprOp;
 	}
 
 	@Override
 	public Op visitMultExpr(MultExprContext ctx) {
 		Reg reg = reg(ctx);
-		visit(ctx.expr(0));
+		Op exprOp = visit(ctx.expr(0));
 		visit(ctx.expr(1));
 		Op op = visit(ctx.multOp());
 		op.getArgs().add(regs.get(ctx.expr(0)));
 		op.getArgs().add(regs.get(ctx.expr(1)));
 		op.getArgs().add(reg);		
-		return op;
+		return exprOp;
 	}
 
 	@Override
 	public Op visitPlusExpr(PlusExprContext ctx) {
 		Reg reg = reg(ctx);
-		visit(ctx.expr(0));
+		Op exprOp = visit(ctx.expr(0));
 		visit(ctx.expr(1));
 		Op op = visit(ctx.plusOp());
 		op.getArgs().add(regs.get(ctx.expr(0)));
 		op.getArgs().add(regs.get(ctx.expr(1)));
 		op.getArgs().add(reg);
-		return op;
+		return exprOp;
 	}
 
 	@Override
 	public Op visitCompExpr(CompExprContext ctx) {
 		Reg reg = reg(ctx);
-		visit(ctx.expr(0));
+		Op exprOp = visit(ctx.expr(0));
 		visit(ctx.expr(1));
 		Op op = visit(ctx.compOp());
 		op.getArgs().add(regs.get(ctx.expr(0)));
 		op.getArgs().add(regs.get(ctx.expr(1)));
 		op.getArgs().add(reg);
-		return op;
+		return exprOp;
 	}
 
 	@Override
 	public Op visitBoolExpr(BoolExprContext ctx) {
 		Reg reg = reg(ctx);
-		visit(ctx.expr(0));
+		Op exprOp = visit(ctx.expr(0));
 		visit(ctx.expr(1));
 		Op op = visit(ctx.boolOp());
 		op.getArgs().add(regs.get(ctx.expr(0)));
 		op.getArgs().add(regs.get(ctx.expr(1)));
 		op.getArgs().add(reg);
-		return op;
+		return exprOp;
 	}
 	
 	@Override
@@ -292,10 +294,9 @@ public class Generator extends SimplePascalBaseVisitor<Op> {
 	
 	@Override
 	public Op visitIdExpr(IdExprContext ctx) {
-		Reg reg = vars.get(ctx.getText());
-		setReg(ctx, reg);
-		
-		return null; //use loadI or loadAO? probably not. register was already set. i2i maybe.
+		Reg varReg = vars.get(ctx.getText());
+		setReg(ctx, varReg);
+		return emit(OpCode.nop);
 	}
 	
 	@Override

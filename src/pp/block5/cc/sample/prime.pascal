@@ -1,4 +1,4 @@
-Program gcd;
+Program prime;
 
 Var x: Integer;
     i: Integer;

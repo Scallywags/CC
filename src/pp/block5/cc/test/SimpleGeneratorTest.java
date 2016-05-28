@@ -34,9 +34,9 @@ public class SimpleGeneratorTest {
 	public void testPrime() throws IOException, ParseException {
 		Program prog = compile("prime");
 		String out = sim(prog, "365");
-		assertEquals("Divisor: 5", out.trim());
+		assertEquals("\"Divisor: \"5", out.trim());
 		out = sim(prog, "367");
-		assertEquals("Is prime 0", out.trim());
+		assertEquals("\"Is prime \"0", out.trim());
 	}
 
 	private Program compile(String filename) throws IOException, ParseException {
