@@ -2,7 +2,6 @@ package pp.block5.cc.simple;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -11,7 +10,6 @@ import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.ParseTreeProperty;
-import org.antlr.v4.runtime.tree.TerminalNode;
 
 import pp.block5.cc.pascal.SimplePascalBaseVisitor;
 import pp.block5.cc.pascal.SimplePascalParser.*;
@@ -44,7 +42,7 @@ public class Generator extends SimplePascalBaseVisitor<Op> {
 	/** Association of expression and target nodes to registers. */
 	private ParseTreeProperty<Reg> regs;
 
-	private Map<String, Reg> vars;
+	private Map<String, Reg> vars;	//register to register, here we go! :D
 
 	/** Generates ILOC code for a given parse tree,
 	 * given a pre-computed checker result.
@@ -139,16 +137,17 @@ public class Generator extends SimplePascalBaseVisitor<Op> {
 
 		Op ifOp = emit(OpCode.cbr, r_cmp);
 		ifOp.setComment("if " + expr.getText());
+		Label ifLabel = label(ctx);
 
 		StatContext then = ctx.stat(0);
 		Op thenOp = visit(then);
-		Label thenLabel = label(then);
-		thenOp.setLabel(new Label("then_" + thenLabel));
+		Label thenLabel = new Label("then_" + ifLabel);
+		thenOp.setLabel(thenLabel);
 		thenOp.setComment("then");
 
 		ifOp.getArgs().add(thenLabel);
 
-		Label endifLabel = new Label("endif_" + label(ctx));
+		Label endifLabel = new Label("endif_" + ifLabel);
 		if (ctx.stat().size() == 1) {
 			//NO ELSE
 			Op endif = emit(OpCode.nop);
@@ -162,7 +161,7 @@ public class Generator extends SimplePascalBaseVisitor<Op> {
 			StatContext elseStat = ctx.stat(1);
 			Op elseOp = visit(elseStat);
 			elseOp.setComment("else");
-			Label elseLabel = new Label("else_" + label(elseStat));
+			Label elseLabel = new Label("else_" + ifLabel);
 			elseOp.setLabel(elseLabel);
 			ifOp.getArgs().add(elseLabel);
 
@@ -209,7 +208,8 @@ public class Generator extends SimplePascalBaseVisitor<Op> {
 
 	@Override
 	public Op visitInStat(InStatContext ctx) {
-		return emit(OpCode.in, new Str(ctx.STR().getText()), vars.get(ctx.target().getText()));
+		String string = ctx.STR().getText();
+		return emit(OpCode.in, new Str(string), vars.get(ctx.target().getText()));
 	}
 
 	@Override
