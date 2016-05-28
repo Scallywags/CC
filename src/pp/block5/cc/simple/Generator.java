@@ -95,14 +95,17 @@ public class Generator extends SimplePascalBaseVisitor<Op> {
 
 	@Override
 	public Op visitVar(VarContext ctx) {
-		for (int i = 1; i < ctx.ID().size(); i++) {
-			Reg reg = reg(ctx.ID(i));
-			vars.put(ctx.ID(i).getText(), reg);
-			emit(OpCode.loadI, new Num(0), reg);
-		}
 		Reg reg = reg(ctx.ID(0));
 		vars.put(ctx.ID(0).getText(), reg);
-		return emit(OpCode.loadI, new Num(0), reg);
+		Op op = emit(OpCode.loadI, new Num(0), reg);
+		op.setComment(ctx.ID(0).getText());
+		for (int i = 1; i < ctx.ID().size(); i++) {
+			Reg vReg = reg(ctx.ID(i));
+			vars.put(ctx.ID(i).getText(), vReg);
+			Op v = emit(OpCode.loadI, new Num(0), vReg);
+			v.setComment(ctx.ID(i).getText());
+		}
+		return op;
 	}
 
 	@Override
@@ -111,6 +114,7 @@ public class Generator extends SimplePascalBaseVisitor<Op> {
 		for (int i = 1; i < ctx.stat().size(); i++) {
 			visit(ctx.stat(i));
 		}
+		op.setComment("block");
 		return op;
 	}
 	
@@ -118,11 +122,13 @@ public class Generator extends SimplePascalBaseVisitor<Op> {
 
 	@Override
 	public Op visitAssStat(AssStatContext ctx) {
-		visit(ctx.expr());
+		Op exprOp = visit(ctx.expr());
 		Reg exprReg = regs.get(ctx.expr());
 		Reg targReg = vars.get(ctx.target().getText()); //ID
 
-		return emit(OpCode.i2i, exprReg, targReg);
+		Op op = emit(OpCode.i2i, exprReg, targReg);
+		op.setComment(ctx.getText());
+		return exprOp;
 	}
 
 	@Override
@@ -132,11 +138,13 @@ public class Generator extends SimplePascalBaseVisitor<Op> {
 		Reg r_cmp = reg(expr);
 
 		Op ifOp = emit(OpCode.cbr, r_cmp);
+		ifOp.setComment("if " + expr.getText());
 
 		StatContext then = ctx.stat(0);
 		Op thenOp = visit(then);
 		Label thenLabel = label(then);
-		thenOp.setLabel(thenLabel);
+		thenOp.setLabel(new Label("then_" + thenLabel));
+		thenOp.setComment("then");
 
 		ifOp.getArgs().add(thenLabel);
 
@@ -148,16 +156,19 @@ public class Generator extends SimplePascalBaseVisitor<Op> {
 			ifOp.getArgs().add(endifLabel);
 		} else {
 			//ELSE
-			emit(OpCode.jumpI, endifLabel);		//after de body.
+			Op toEndIf = emit(OpCode.jumpI, endifLabel);		//after de body.
+			toEndIf.setComment("there is an else part, jump to endif");
 
 			StatContext elseStat = ctx.stat(1);
 			Op elseOp = visit(elseStat);
-			Label elseLabel = label(elseStat);
+			elseOp.setComment("else");
+			Label elseLabel = new Label("else_" + label(elseStat));
 			elseOp.setLabel(elseLabel);
 			ifOp.getArgs().add(elseLabel);
 
 			Op endif = emit(OpCode.nop);
 			endif.setLabel(endifLabel);
+			endif.setComment("endif");
 		}
 
 		return exprOp;
@@ -165,30 +176,30 @@ public class Generator extends SimplePascalBaseVisitor<Op> {
 
 	@Override
 	public Op visitWhileStat(WhileStatContext ctx) {
-		Op nop = emit(OpCode.nop);
-		
 		ExprContext expr = ctx.expr();
 		Op exprOp = visit(expr);
-		Label whileLabel = label(ctx);
+		Label whileLabel = new Label("while_" + label(ctx));
 		exprOp.setLabel(whileLabel);
 		
-		Op compare = emit(OpCode.cbr, reg(expr));	//todo append body and endlabels
+		Op compare = emit(OpCode.cbr, reg(expr));
+		compare.setComment("while " + expr.getText());
 		
 		StatContext stat = ctx.stat();
 		Op body = visit(stat);
 		Label bodyLabel = new Label("body_" + whileLabel);
 		body.setLabel(bodyLabel);
 		
-		emit(OpCode.jumpI, whileLabel);
+		Op backToWhile = emit(OpCode.jumpI, whileLabel);
+		backToWhile.setComment("back to while");
 		
 		Op endWhile = emit(OpCode.nop);
-		Label endWhileLabel = new Label("endwhile_" + whileLabel);
+		Label endWhileLabel = new Label("end_" + whileLabel);
 		endWhile.setLabel(endWhileLabel);
 		
 		compare.getArgs().add(bodyLabel);
 		compare.getArgs().add(endWhileLabel);
 		
-		return nop;
+		return exprOp;
 	}
 
 	@Override
@@ -284,7 +295,7 @@ public class Generator extends SimplePascalBaseVisitor<Op> {
 		Reg reg = vars.get(ctx.getText());
 		setReg(ctx, reg);
 		
-		return null; //TODO use loadI or LoadAO? probably not.
+		return null; //use loadI or loadAO? probably not. register was already set. i2i maybe.
 	}
 	
 	@Override
