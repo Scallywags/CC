@@ -12,6 +12,5 @@ begin
             number := number  + 1
         end
     ;
-    out total
-end;
-.
+    out("Total: ", total)
+end.
