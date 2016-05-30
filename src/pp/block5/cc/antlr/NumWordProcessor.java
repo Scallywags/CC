@@ -73,7 +73,7 @@ public class NumWordProcessor extends NumWordBaseVisitor<Integer> {
 		List<ParseTree> children = ctx.children;
 		int size = children.size();
 		if (size == 3) {
-			//just the single numer and word
+			//just the single number and word
 			total += Integer.parseInt(children.get(0).getText());
 			builder.append(total).append(" ");
 			builder.append(children.get(1).getText());
@@ -85,7 +85,7 @@ public class NumWordProcessor extends NumWordBaseVisitor<Integer> {
 			String lastNum = children.get(size - 3).getText();
 			String lastWord = children.get(size - 2).getText();
 			total += Integer.parseInt(lastNum);
-			builder.append("and ").append(lastNum);
+			builder.append("and ").append(lastNum).append(" ");
 			builder.append(lastWord);
 		}
 		
