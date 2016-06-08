@@ -1,0 +1,48 @@
+				in "Argument? ", r_arg
+				loadI 0 => r_0
+				loadI 1 => r_1
+				
+				loadI 4 => r_4
+				
+				store r_0 => r_0
+				store r_1 => r_4
+
+fib:			push r_arg							//parameter
+
+				multI r_arg, 4 => r_retval_memaddr	
+				push r_retval_memaddr				//mem addr of return value
+	
+				loadI #fib => r_pc
+				push r_pc							//return address
+				
+				cmp_LE r_arg, r_1 => r_cmp
+				cbr r_cmp -> basecase, rec
+
+rec:			pop r_pc
+				pop r_retval_memaddr
+				pop r_arg
+				
+				subI r_arg, 1 => r_argMinOne
+				subI r_arg, 2 => r_argMinTwo
+				
+				subI r_retval_memaddr, 4 => r_retval_memaddr_oneless
+				subI r_retVal_memaddr, 8 => r_retval_memaddr_twoless
+				
+				load r_retval_memaddr_oneless => r_oneless
+				load r_retval_memaddr_twoless => r_twoless
+				
+				add r_oneless, r_twoless => r_fib
+				
+				store r_fib => r_retval_memaddr
+				
+				load r_retval_memaddr => r_retval
+				
+				i2i r_argMinOne => r_arg
+				jumpI fib
+				
+				i2i r_argMinTwo => r_args
+				jumpI fib
+				
+basecase:		i2i r_ret_val => r_result			
+				
+				out "Result: ", r_result
