@@ -1,48 +1,61 @@
-				in "Argument? ", r_arg
+				in "Argument? " => r_arg
 				loadI 0 => r_0
 				loadI 1 => r_1
+				loadI #out => r_out
 				
-				loadI 4 => r_4
-				
-				store r_0 => r_0
-				store r_1 => r_4
+				push r_arg							//parameter
+				push r_0							//return value (to be computed)
+				push r_out							//return address
 
-fib:			push r_arg							//parameter
+fib:			loadAI sp, 8 => r_n
 
-				multI r_arg, 4 => r_retval_memaddr	
-				push r_retval_memaddr				//mem addr of return value
-	
-				loadI #fib => r_pc
-				push r_pc							//return address
+				out "r_n: ", r_n
+				out "sp: ", sp
 				
-				cmp_LE r_arg, r_1 => r_cmp
-				cbr r_cmp -> basecase, rec
+				cmp_LE r_n, r_1 => r_cmp
+				cbr r_cmp -> basecase, recursive
 
-rec:			pop r_pc
-				pop r_retval_memaddr
-				pop r_arg
+basecase:		out "BASE CASE r_n=", r_n
+				storeAI r_1 => sp, 4
+				load sp => pc
+				jump -> pc
 				
-				subI r_arg, 1 => r_argMinOne
-				subI r_arg, 2 => r_argMinTwo
+recursive:		loadI #fibNMinOne => r_fibNMinOne
+				subI r_n, 2 => r_nMinTwo
 				
-				subI r_retval_memaddr, 4 => r_retval_memaddr_oneless
-				subI r_retVal_memaddr, 8 => r_retval_memaddr_twoless
+				out "r_nMinTwo r_n=", r_n
+				out "r_nMinTwo r_n-2=", r_nMinTwo
 				
-				load r_retval_memaddr_oneless => r_oneless
-				load r_retval_memaddr_twoless => r_twoless
+				push r_nMinTwo						//parameter
+				push r_0							//return value
+				push r_fibNMinOne					//return address
+				jumpI -> fib
 				
-				add r_oneless, r_twoless => r_fib
+fibNMinOne:		loadI #sum => r_sum
 				
-				store r_fib => r_retval_memaddr
+				loadAI sp, 8 => r_n
 				
-				load r_retval_memaddr => r_retval
+				out "fibNMinOne r_n=", r_n
 				
-				i2i r_argMinOne => r_arg
-				jumpI fib
+				subI r_n, 1 => r_nMinOne
+				push r_nMinOne 						//parameter
+				push r_0 							//return value
+				push r_sum 							//return address
+				jumpI -> fib
+
+sum:			loadAI sp, 4 => r_nMinOneFib
+				loadAI sp, 16 => r_nMinTwoFib
 				
-				i2i r_argMinTwo => r_args
-				jumpI fib
+				add r_nMinOneFib, r_nMinTwoFib => r_fib
 				
-basecase:		i2i r_ret_val => r_result			
+				addI sp, 24 => sp					//pop children records
+
+				storeAI r_fib => sp, 4
 				
+				load sp => pc
+				jump -> pc
+				
+out:			pop => r_retaddr
+				pop => r_result
+				pop => r_param
 				out "Result: ", r_result
